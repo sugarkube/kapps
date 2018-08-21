@@ -1,0 +1,3 @@
+# since this isn't a Helm-based kapp, we have to track the version somewhere
+# other than a `Chart.yaml` file, so we put it here...
+version: 0.1.0
