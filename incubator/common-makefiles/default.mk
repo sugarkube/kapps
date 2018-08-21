@@ -17,7 +17,7 @@ include ../common-makefiles/terraform/tf-plan.mk
 include ../common-makefiles/terraform/tf-validate.mk
 
 # Top-level targets. Some of these depend on the ones above.
-include ../common-makefiles/all.mk
+include ../common-makefiles/install.mk
 include ../common-makefiles/bootstrap.mk
 include ../common-makefiles/clean.mk
 include ../common-makefiles/destroy.mk

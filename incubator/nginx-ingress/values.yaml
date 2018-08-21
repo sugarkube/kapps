@@ -1,0 +1,5 @@
+nginx-ingress:
+  controller:
+    service:
+      type: NodePort
+      externalTrafficPolicy: Local

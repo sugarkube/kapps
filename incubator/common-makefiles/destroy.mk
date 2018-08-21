@@ -3,7 +3,7 @@ destroy:
 	{ \
 		set -e ;\
 		if [ "$$APPROVED" = "true" ]; then \
-			if [ "$$DEST" != "local" ]; then \
+			if [ "$$PROFILE" != "local" ]; then \
 				make tf-destroy ;\
 			fi ;\
 			make hl-uninstall ;\
