@@ -21,3 +21,4 @@ include ../common-makefiles/all.mk
 include ../common-makefiles/bootstrap.mk
 include ../common-makefiles/clean.mk
 include ../common-makefiles/destroy.mk
+include ../common-makefiles/help.mk
