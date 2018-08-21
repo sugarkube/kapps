@@ -1,0 +1,16 @@
+{
+  "CN": "example.com",
+  "key": {
+    "algo": "rsa",
+    "size": 4096
+  },
+  "names": [
+    {
+      "C":  "UK",
+      "L":  "Bristol",
+      "O":  "Internet Widgets, Ltd.",
+      "OU": "WWW",
+      "ST": "South West"
+    }
+  ]
+}

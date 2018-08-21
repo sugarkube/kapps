@@ -1,0 +1,5 @@
+dependencies:
+- name: cert-manager
+  version: "v0.4.0"
+  repository: "@stable"
+
