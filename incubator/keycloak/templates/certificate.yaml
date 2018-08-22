@@ -18,3 +18,10 @@ spec:
   - {{ template "keycloak.name" . }}.{{ .Release.Namespace }}
   - {{ template "keycloak.name" . }}.{{ .Release.Namespace }}.svc
   - {{ template "keycloak.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
+{{- if .Values.keycloak.keycloak.ingress.tls }}
+  {{- range .Values.keycloak.keycloak.ingress.tls }}
+    {{- range .hosts }}
+  - {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end }}
