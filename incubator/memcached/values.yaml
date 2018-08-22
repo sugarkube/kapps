@@ -1,0 +1,6 @@
+memcached:
+  metrics:
+    enabled: true
+
+serviceAnnotations:
+  prometheus.io/scrape: "true"

@@ -1,0 +1,6 @@
+dependencies:
+- name: memcached
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 2.3.0
+digest: sha256:e47bff08af4f6ba3e39fa8d75f59566b0ce15703b05ef1366dc8d9fd279747b3
+generated: 2018-08-22T07:30:48.358015013+01:00
