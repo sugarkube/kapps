@@ -14,7 +14,7 @@ PROVIDER=local APPROVED=true make install
 
 Add the Minikube cluster IP to `/etc/hosts`:
 ```
-echo $(minikube ip)  keycloak.localhost >> sudo /etc/hosts
+echo $(minikube ip) keycloak.localhost | sudo tee -a /etc/hosts
 ```
 
 Then go to `https://keycloak.localhost`.
@@ -38,3 +38,4 @@ randomly-generated admin password by running:
 ```
 kubectl get secret --namespace keycloak keycloak-http -o jsonpath="{.data.password}" | base64 --decode; echo
 ```
+The default username is `admin`.

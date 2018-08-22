@@ -19,6 +19,8 @@ keycloak:
 #        - keycloak.example.com         # set in _generated_values.yaml file because
 #        secretName: keycloak-cert      # lists of maps can't currently be `helm --set` (GH #4508)
 
+# todo - create an example of importing data on boot to initialise local/dev clusters.
+# See: https://www.keycloak.org/docs/2.5/server_admin/topics/export-import.html
 #    extraVolumes: |
 #      - name: realm-secret
 #        secret:
