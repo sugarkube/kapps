@@ -8,13 +8,16 @@ keycloak:
 
     ingress:
       enabled: true
+      annotations:
+        kubernetes.io/ingress.class: "nginx"
+
 #     hosts:
 #     - keycloak.example.com         # set by the Makefile
 
-      tls:
+#      tls:
 #      - hosts:
 #        - keycloak.example.com         # set in _generated_values.yaml file because
-#        secretName: keycloak-cert      # lists of maps can't currently be `--set` (GH #4508)
+#        secretName: keycloak-cert      # lists of maps can't currently be `helm --set` (GH #4508)
 
 #    extraVolumes: |
 #      - name: realm-secret
