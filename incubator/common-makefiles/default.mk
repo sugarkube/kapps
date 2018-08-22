@@ -1,5 +1,8 @@
 SHELL=/bin/bash
 
+# default make target
+include ../common-makefiles/help.mk
+
 # helm targets
 include ../common-makefiles/helm/vars.mk
 include ../common-makefiles/helm/hl-install.mk
@@ -21,4 +24,3 @@ include ../common-makefiles/install.mk
 include ../common-makefiles/bootstrap.mk
 include ../common-makefiles/clean.mk
 include ../common-makefiles/destroy.mk
-include ../common-makefiles/help.mk

@@ -8,6 +8,7 @@ help:
 	@echo Optional \(most have default values\):
 	@echo \* CLUSTER=\<cluster\> - name of your target cluster
 	@echo \* CLUSTER_PROFILE=\<cluster_profile\> - name of your stack cluster profile
+	@echo \* PROVIDER=\<provider\> - e.g. \'local\', \'aws\', etc.
 	@echo
 	@echo Provider-dependent:
 	@echo \* REGION=\<region\>
@@ -20,7 +21,6 @@ help:
 	@echo \* CHART_DIR=\<chart_dir\> - to run against charts in relative directories
 	@echo
 	@echo Terraform-specific:
-	@echo \* CLOUD=\<cloud\> - e.g. \'aws\', or \'gcp\' or whatever you have \'terraform_\<cloud\>\' directories for.
-	@echo \* TERRAFORM_DIR=\<dir\> - to run terraform against relative dirs. Makes \'CLOUD\' have no effect.
+	@echo \* TERRAFORM_DIR=\<dir\> - to run terraform against relative dirs. Default \'terraform_\<PROVIDER\>\'
 	@echo
 	@echo To delete, run \"make destroy\".
