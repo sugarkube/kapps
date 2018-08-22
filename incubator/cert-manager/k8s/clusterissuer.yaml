@@ -5,4 +5,4 @@ metadata:
   namespace: "{{ namespace }}"
 spec:
   ca:
-    secretName: "{{ chart }}-ca"
+    secretName: ca-key-pair
