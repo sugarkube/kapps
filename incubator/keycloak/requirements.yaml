@@ -1,0 +1,5 @@
+# Standard Helm requirements.yaml file
+dependencies:
+- name: keycloak
+  version: "3.2.0"
+  repository: "@stable"

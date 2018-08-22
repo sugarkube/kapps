@@ -1,0 +1,18 @@
+keycloak:
+  username: admin
+
+  ingress:
+    enabled: true
+    hosts: keycloak.???         # todo
+
+  extraVolumes: |
+    - name: realm-secret
+      secret:
+        secretName: realm-secret
+
+  extraVolumeMounts: |
+    - name: realm-secret
+      mountPath: "/realm/"
+      readOnly: true
+
+  extraArgs: -Dkeycloak.import=/realm/realm.json
