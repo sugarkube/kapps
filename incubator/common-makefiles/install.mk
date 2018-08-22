@@ -5,17 +5,11 @@ install:
 		if [ "$$APPROVED" = "true" ]; then \
 			echo Approved. Installing kapp... ;\
 			echo ;\
-			if [ "$$PROVIDER" != "local" ]; then \
-				echo Applying terraform plan... ;\
-				make tf-apply ;\
-			fi ;\
+			make tf-apply ;\
 			echo Installing helm chart ;\
 			make hl-install ;\
 		else \
-			if [ "$$PROVIDER" != "local" ]; then \
-				echo Planning terraform changes... ;\
-				make tf-plan ;\
-			fi ;\
+			make tf-plan ;\
 			echo Rerun this task setting 'APPROVED=true' to install this kapp ;\
 		fi \
 	}

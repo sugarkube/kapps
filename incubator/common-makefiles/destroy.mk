@@ -3,9 +3,7 @@ destroy:
 	{ \
 		set -e ;\
 		if [ "$$APPROVED" = "true" ]; then \
-			if [ "$$PROVIDER" != "local" ]; then \
-				make tf-destroy ;\
-			fi ;\
+			make tf-destroy ;\
 			make hl-uninstall ;\
 		else \
 			echo Rerun this task setting 'APPROVED=true' to uninstall this kapp ;\
