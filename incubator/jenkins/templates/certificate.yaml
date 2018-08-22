@@ -1,0 +1,27 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: {{ template "jenkins.name" . }}-cert
+  labels:
+    app: {{ template "jenkins.name" . }}
+    chart: {{ template "jenkins.chart" . }}
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+spec:
+  secretName: {{ template "jenkins.name" . }}-cert
+  issuerRef:
+    name: {{ .Values.cert.name }}
+    kind: {{ .Values.cert.kind }}
+  commonName: {{ template "jenkins.name" . }}
+  dnsNames:
+  - {{ template "jenkins.name" . }}
+  - {{ template "jenkins.name" . }}.{{ .Release.Namespace }}
+  - {{ template "jenkins.name" . }}.{{ .Release.Namespace }}.svc
+  - {{ template "jenkins.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
+{{- if .Values.jenkins.Master.Ingress.TLS }}
+  {{- range .Values.jenkins.Master.Ingress.TLS }}
+    {{- range .hosts }}
+  - {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end }}

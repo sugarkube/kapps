@@ -1,0 +1,5 @@
+# Standard Helm requirements.yaml file
+dependencies:
+- name: jenkins
+  version: "0.16.20"
+  repository: "@stable"
