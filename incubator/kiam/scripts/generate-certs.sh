@@ -14,7 +14,7 @@ if [ ! -d "$cert_dir" ]; then
 fi
 
 cd $cert_dir
-cfssl gencert -initca "$json_dir/json/ca.json" | cfssljson -bare ca
-mv "$cert_dir/ca-key.pem" "$cert_dir/ca.key"
-mv "$cert_dir/ca.pem" "$cert_dir/ca.crt"
+cfssl gencert -initca "$json_dir/ca.json" | cfssljson -bare ca
+cfssl gencert -ca="$cert_dir/ca.pem" -ca-key="$cert_dir/ca-key.pem" "$json_dir/server.json" | cfssljson -bare server
+cfssl gencert -ca="$cert_dir/ca.pem" -ca-key="$cert_dir/ca-key.pem" "$json_dir/agent.json" | cfssljson -bare agent
 cd ..
