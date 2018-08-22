@@ -1,0 +1,20 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: {{ template "nginx-ingress.name" . }}-cert
+  labels:
+    app: {{ template "nginx-ingress.name" . }}
+    chart: {{ template "nginx-ingress.chart" . }}
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+spec:
+  secretName: {{ template "nginx-ingress.name" . }}-cert
+  issuerRef:
+    name: {{ .Values.cert.name }}
+    kind: {{ .Values.cert.kind }}
+  commonName: {{ template "nginx-ingress.name" . }}
+  dnsNames:
+  - {{ template "nginx-ingress.name" . }}
+  - {{ template "nginx-ingress.name" . }}.{{ .Release.Namespace }}
+  - {{ template "nginx-ingress.name" . }}.{{ .Release.Namespace }}.svc
+  - {{ template "nginx-ingress.name" . }}.{{ .Release.Namespace }}.svc.cluster.local

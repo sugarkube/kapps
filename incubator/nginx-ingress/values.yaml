@@ -3,3 +3,7 @@ nginx-ingress:
     service:
       type: NodePort
       externalTrafficPolicy: Local
+
+cert:
+  name: ca-cluster-issuer     # name of the cert manager cluster issuer
+  kind: ClusterIssuer
