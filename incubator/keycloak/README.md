@@ -1,6 +1,9 @@
 # Keycloak
 
 ## Installation
+**Note**: Check the Makefile for additional env vars that need setting, e.g.:
+* HOSTED_ZONE - the domain name to create subdomain for this kapp, 
+  e.g. `example.com`
 
 ### Local installation
 When running against a local provider, no AWS resources will be created. Use

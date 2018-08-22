@@ -1,9 +1,19 @@
+cert:
+  name: ca-cluster-issuer     # name of the cert manager cluster issuer
+  kind: ClusterIssuer
+
 keycloak:
   username: admin
 
   ingress:
     enabled: true
-    hosts: keycloak.???         # todo
+#    hosts: keycloak.example.com         # set by the Makefile
+
+  tls:
+#  - hosts:
+#    - keycloak.example.com         # set in a generated values.yaml file because
+                                    # lists of maps can't currently be `--set` (GH #4508)
+  secretName: keycloak-cert
 
   extraVolumes: |
     - name: realm-secret
