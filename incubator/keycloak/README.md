@@ -12,6 +12,13 @@ the following to install locally:
 PROVIDER=local APPROVED=true make install
 ``` 
 
+Add the Minikube cluster IP to `/etc/hosts`:
+```
+echo $(minikube ip)  keycloak.localhost >> sudo /etc/hosts
+```
+
+Then go to `https://keycloak.localhost`.
+
 ### AWS installation
 Installing onto an AWS Kubernetes cluster will create an RDS database. The size
 of the instance will depend on the environment. E.g. to install using the dev
@@ -26,7 +33,8 @@ The first command will make Terraform plan its operations, and the second
 invocation will apply it.
 
 ## Usage
-After installation, retrieve randomly-generated admin password by running:
+After installation using the settings in this kapp, retrieve the 
+randomly-generated admin password by running:
 ```
-kubectl get secret --namespace {{ .Release.Namespace }} {{ template "keycloak.fullname" . }}-http -o jsonpath="{.data.password}" | base64 --decode; echo
+kubectl get secret --namespace keycloak keycloak-http -o jsonpath="{.data.password}" | base64 --decode; echo
 ```
