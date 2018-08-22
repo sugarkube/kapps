@@ -1,0 +1,4 @@
+keycloak:
+  keycloak:
+    service:
+      type: NodePort

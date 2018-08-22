@@ -1,2 +1,3 @@
 keycloak:
-  replicas: 2
+  keycloak:
+    replicas: 2

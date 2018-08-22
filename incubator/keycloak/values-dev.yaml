@@ -1,4 +1,5 @@
 keycloak:
-  persistence:
-    # Use postgres in dev. In local we'll use the default H2; in staging/prod RDS.
-    deployPostgres: true
+  keycloak:
+    persistence:
+      # Use postgres in dev. In local we'll use the default H2; in staging/prod RDS.
+      deployPostgres: true

@@ -3,26 +3,27 @@ cert:
   kind: ClusterIssuer
 
 keycloak:
-  username: admin
+  keycloak:
+    username: admin
 
-  ingress:
-    enabled: true
-#    hosts: keycloak.example.com         # set by the Makefile
+    ingress:
+      enabled: true
+#     hosts:
+#     - keycloak.example.com         # set by the Makefile
 
-  tls:
-#  - hosts:
-#    - keycloak.example.com         # set in a generated values.yaml file because
-                                    # lists of maps can't currently be `--set` (GH #4508)
-  secretName: keycloak-cert
+      tls:
+#      - hosts:
+#        - keycloak.example.com         # set in _generated_values.yaml file because
+#        secretName: keycloak-cert      # lists of maps can't currently be `--set` (GH #4508)
 
-  extraVolumes: |
-    - name: realm-secret
-      secret:
-        secretName: realm-secret
+#    extraVolumes: |
+#      - name: realm-secret
+#        secret:
+#          secretName: realm-secret
+#
+#    extraVolumeMounts: |
+#      - name: realm-secret
+#        mountPath: "/realm/"
+#        readOnly: true
 
-  extraVolumeMounts: |
-    - name: realm-secret
-      mountPath: "/realm/"
-      readOnly: true
-
-  extraArgs: -Dkeycloak.import=/realm/realm.json
+#    extraArgs: -Dkeycloak.import=/realm/realm.json
