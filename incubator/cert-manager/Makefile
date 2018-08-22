@@ -17,8 +17,8 @@ hl-install: hl-lint
 	helm upgrade --kube-context=$(KUBE_CONTEXT) --wait --install \
 		$(RELEASE) . \
 		--namespace=$(NAMESPACE) \
-		$(helm_params) \
-		$(local_helm_opts) && \
+		$(helm-params) \
+		$(local-helm-opts) && \
 		sed -e 's/{{ chart }}/$(CHART)/g' -e 's/{{ namespace }}/$(NAMESPACE)/g' \
 			k8s/clusterissuer.yaml | $(KUBECTL) apply -f -
 
