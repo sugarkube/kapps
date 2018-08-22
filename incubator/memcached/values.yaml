@@ -2,5 +2,5 @@ memcached:
   metrics:
     enabled: true
 
-serviceAnnotations:
-  prometheus.io/scrape: "true"
+  serviceAnnotations:
+    prometheus.io/scrape: "true"
