@@ -1,0 +1,15 @@
+cert:
+  name: ca-cluster-issuer     # name of the cert manager cluster issuer
+  kind: ClusterIssuer
+
+wordpress:
+  allowEmptyPassword: false
+  serviceType: NodePort
+  ingress:
+    enabled: true
+
+  mariadb:
+    enabled: false      # use RDS instead, except locally
+    db:
+      name: wordpress
+      user: wordpress
