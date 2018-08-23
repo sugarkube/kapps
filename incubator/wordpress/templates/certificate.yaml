@@ -18,10 +18,10 @@ spec:
   - {{ template "wordpress.name" . }}.{{ .Release.Namespace }}
   - {{ template "wordpress.name" . }}.{{ .Release.Namespace }}.svc
   - {{ template "wordpress.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
-{{- if .Values.wordpress.ingress.tls }}
-  {{- range .Values.wordpress.ingress.tls }}
-    {{- range .hosts }}
-  - {{ . }}
+{{- if .Values.wordpress.ingress.hosts }}
+  {{- range .Values.wordpress.ingress.hosts }}
+    {{- if .tls }}
+  - {{ .name }}
     {{- end }}
   {{- end }}
 {{- end }}
