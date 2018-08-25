@@ -39,3 +39,6 @@ randomly-generated admin password by running:
 kubectl get secret --namespace keycloak keycloak-http -o jsonpath="{.data.password}" | base64 --decode; echo
 ```
 The default username is `admin`.
+
+**Note**: Make sure to change the password to prevent anyone who can run the 
+above from gaining admin.

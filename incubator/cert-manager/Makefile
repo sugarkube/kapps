@@ -1,7 +1,8 @@
 helm-params=--set ca.crt=$(CERT_MANAGER_CA_CRT) \
 			--set ca.key=$(CERT_MANAGER_CA_KEY)
 
-include ../common-makefiles/default.mk
+KAPP_ROOT?=..
+include $(KAPP_ROOT)/common-makefiles/default.mk
 
 bootstrap:
 	{ \

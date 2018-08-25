@@ -26,3 +26,6 @@ randomly-generated admin password by running:
 kubectl -n jenkins get secret jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode; echo
 ```
 The default username is `admin`.
+
+**Note**: Make sure to change the password to prevent anyone who can run the 
+above from gaining admin.

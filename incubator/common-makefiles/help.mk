@@ -7,7 +7,7 @@ help:
 	@echo
 	@echo Optional \(most have default values\):
 	@echo \* CLUSTER=\<cluster\> - name of your target cluster
-	@echo \* CLUSTER_PROFILE=\<cluster_profile\> - name of your stack cluster profile
+	@echo \* PROFILE=\<profile\> - name of your stack cluster profile
 	@echo \* PROVIDER=\<provider\> - e.g. \'local\', \'aws\', etc.
 	@echo
 	@echo Provider-dependent:

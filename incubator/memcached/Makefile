@@ -1,1 +1,2 @@
-include ../common-makefiles/default.mk
+KAPP_ROOT?=..
+include $(KAPP_ROOT)/common-makefiles/default.mk
