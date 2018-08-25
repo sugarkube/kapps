@@ -6,3 +6,9 @@ metadata:
 spec:
   ca:
     secretName: ca-key-pair
+
+# todo - rename this ca-cluster-issuer-int and only use it for internal services.
+# configure Let's Encrypt and use it for publicly available services.
+# See https://cert-manager.readthedocs.io/en/latest/tutorials/acme/http-validation.html.
+# Also make a distinction between prod and non-prod certs - especially important when
+# using Let's Encrypt.
