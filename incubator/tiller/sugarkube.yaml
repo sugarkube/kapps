@@ -3,3 +3,4 @@
 version: 0.1.0
 interfaces:     # this kapp needs to be parameterised as a k8s_resource kapp
 - k8s_resource
+- helm
