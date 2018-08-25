@@ -1,5 +1,5 @@
-KUBECTL=$(shell which kubectl)
-HELM=$(shell which helm)
+KUBECTL?=$(shell which kubectl)
+HELM?=$(shell which helm)
 
 CHART=$(shell basename `pwd`)
 CHART_DIR?=.
