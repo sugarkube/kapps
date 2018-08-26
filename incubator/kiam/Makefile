@@ -5,7 +5,7 @@ helm-params=--set kiam.server.tlsFiles.ca=$(KIAM_CA_PEM) \
 			--set kiam.agent.tlsFiles.cert=$(KIAM_AGENT_PEM) \
 			--set kiam.agent.tlsFiles.key=$(KIAM_AGENT_KEY)
 
-KAPP_ROOT?=..
+KAPP_ROOT?=$(dir $(PWD))
 include $(KAPP_ROOT)/common-makefiles/default.mk
 
 bootstrap:

@@ -1,4 +1,4 @@
-KAPP_ROOT?=..
+KAPP_ROOT?=$(dir $(PWD))
 include $(KAPP_ROOT)/common-makefiles/helm/vars.mk
 
 .PHONY: install
