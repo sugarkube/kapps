@@ -4,8 +4,6 @@ help:
 	@echo
 	@echo Env vars supplied by Sugarkube that you probably won\'t need to explicitly set:
 	@echo \* KAPP_ROOT=.. - Use it to explicitly set the path to import common Makefiles from \(used by Sugarkube\)
-	@echo \* HELM=\<path/to/helm\> - Path to the helm binary \(for kapps containing Helm charts\)
-	@echo \* KUBECTL=\<path/to/kubectl\> - Path to the kubectl binary \(for kapps containing Helm charts or K8s resources\)
 	@echo
 	@echo Mandatory:
 	@echo \* APPROVED=\<false/true\> - Run first with \'APPROVED=false\' to plan then \'APPROVED=true\' to actually install.
