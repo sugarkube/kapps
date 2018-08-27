@@ -5,6 +5,9 @@
 
 set -e
 
+CFSSL_PATH=$(which cfssl)
+CFSSLJSON_PATH=$(which cfssljson)
+
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 cert_dir="$script_dir/../_generated_certs"
 json_dir="$script_dir/json"
@@ -14,7 +17,7 @@ if [ ! -d "$cert_dir" ]; then
 fi
 
 cd $cert_dir
-cfssl gencert -initca "$json_dir/ca.json" | cfssljson -bare ca
+"$CFSSL_PATH" gencert -initca "$json_dir/ca.json" | "$CFSSLJSON_PATH" -bare ca
 mv "$cert_dir/ca-key.pem" "$cert_dir/ca.key"
 mv "$cert_dir/ca.pem" "$cert_dir/ca.crt"
 cd ..
