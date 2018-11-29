@@ -2,6 +2,8 @@
 
 # Requires cfssl. See https://github.com/cloudflare/cfssl. On OSX install with
 # `brew install cfssl`.
+#
+# See the cfssl tutorial at: https://coreos.com/os/docs/latest/generate-self-signed-certificates.html
 
 set -e
 
