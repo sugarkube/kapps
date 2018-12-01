@@ -1,7 +1,3 @@
-# pass-through values that can be used by your CD pipelien
-requires:
-  - cfssl
-
 # Env vars to pass to this kapp. Values can come from variables.
 envVars:
   KUBE_CONTEXT: "{{.kube_context}}"
