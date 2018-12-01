@@ -1,3 +1,7 @@
+# This file is a golang template. Variable values come from the final set of
+# variables applicable to the stack/profile/cluster/etc that you install this
+# kapp into.
+
 # since this isn't a Helm-based kapp, we have to track the version somewhere
 # other than a `Chart.yaml` file. This lets us automatically tag our kapp repo
 # in our CD pipeline.

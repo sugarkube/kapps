@@ -1,3 +1,7 @@
+# This file is a golang template. Variable values come from the final set of
+# variables applicable to the stack/profile/cluster/etc that you install this
+# kapp into.
+
 # Env vars to pass to this kapp. Values can come from variables.
 envVars:
   KUBE_CONTEXT: "{{.kube_context}}"

@@ -1,3 +1,7 @@
+# This file is a golang template. Variable values come from the final set of
+# variables applicable to the stack/profile/cluster/etc that you install this
+# kapp into.
+
 # pass-through values that can be used by your CD pipelien
 requires:
   - cfssl
