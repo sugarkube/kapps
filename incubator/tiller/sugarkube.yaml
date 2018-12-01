@@ -5,3 +5,5 @@ version: 0.1.0
 
 envVars:
   KUBE_CONTEXT: "{{.kube_context}}"        # populated with the value of a variable
+  NAMESPACE: "{{.kapp.id}}"
+  RELEASE: "{{.kapp.id}}"
