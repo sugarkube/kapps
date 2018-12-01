@@ -1,4 +1,5 @@
 KAPP_ROOT?=$(dir $(PWD))
+NAMESPACE?=kube-system
 include $(KAPP_ROOT)/common-makefiles/helm/vars.mk
 
 .PHONY: install
@@ -8,7 +9,7 @@ install:
 		if [ "$$APPROVED" = "true" ]; then \
 			echo Approved. Installing kapp... ;\
 			echo Installing kapp ;\
-			$(KUBECTL) apply -f ./k8s/rbac.yaml ;\
+			sed 's/{{namespace}}/$(NAMESPACE)/g' ./k8s/rbac.yaml | $(KUBECTL) apply -f - ;\
 			$(HELM) --kube-context=$(KUBE_CONTEXT) \
 			  --service-account tiller \
 			  init --wait --upgrade;\
