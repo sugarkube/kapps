@@ -9,6 +9,7 @@ install:
 			echo Installing helm chart ;\
 			make hl-install ;\
 		else \
+			make hl-lint ;\
 			make tf-plan ;\
 			echo Rerun this task setting 'APPROVED=true' to install this kapp ;\
 		fi \

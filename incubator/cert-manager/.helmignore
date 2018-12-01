@@ -19,5 +19,4 @@
 .project
 .idea/
 *.tmproj
-_generated_*
-terraform*
+terraform*/
