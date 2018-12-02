@@ -20,8 +20,7 @@ hl-install: hl-lint
 		--namespace=$(NAMESPACE) \
 		$(helm-params) \
 		$(local-helm-opts) && \
-		sed -e 's/{{ chart }}/$(CHART)/g' -e 's/{{ namespace }}/$(NAMESPACE)/g' \
-			k8s/clusterissuer.yaml | $(KUBECTL) apply -f -
+		sed -e 's/{{namespace}}/$(NAMESPACE)/g' ./k8s/clusterissuer.yaml | $(KUBECTL) apply -f -
 
 install:
 	{ \
