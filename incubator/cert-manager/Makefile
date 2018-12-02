@@ -26,18 +26,19 @@ hl-install: hl-lint
 install:
 	{ \
 		set -e ;\
+		if [ -z "$$CERT_MANAGER_CA_CRT" ]; then \
+			echo ;\
+			echo Generating certs... ;\
+			make bootstrap ;\
+			. ./scripts/export-certs.sh ;\
+		else \
+			echo ;\
+			echo Secrets already exported to the shell ;\
+		fi ;\
 		if [ "$$APPROVED" = "true" ]; then \
-			if [ -z "$$CERT_MANAGER_CA_CRT" ]; then \
-				echo ;\
-				echo Generating certs... ;\
-				make bootstrap ;\
-				. ./scripts/export-certs.sh ;\
-			else \
-				echo ;\
-				echo Secrets already exported to the shell ;\
-			fi ;\
 			make hl-install ;\
 		else \
-			echo Nothing to do. Return with 'APPROVED=true' to install ;\
+			make hl-lint ;\
+			echo Rerun with 'APPROVED=true' to install ;\
 		fi \
 	}
