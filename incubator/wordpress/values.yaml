@@ -4,7 +4,6 @@ cert:
 
 wordpress:
   allowEmptyPassword: false
-  serviceType: NodePort
   ingress:
     enabled: true
 
