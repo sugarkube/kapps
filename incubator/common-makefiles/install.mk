@@ -8,6 +8,7 @@ install:
 			make tf-apply ;\
 			echo Installing helm chart ;\
 			make hl-install ;\
+			make post-install ;\
 		else \
 			make hl-lint ;\
 			make tf-plan ;\
