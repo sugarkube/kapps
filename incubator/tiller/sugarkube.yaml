@@ -10,5 +10,4 @@ version: 0.1.0
 # Env vars to pass to this kapp. Values can come from variables.
 envVars:
   KUBE_CONTEXT: "{{.kube_context}}"
-  NAMESPACE: "{{.kapp.id}}"
   RELEASE: "{{.kapp.id}}"
