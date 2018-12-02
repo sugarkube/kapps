@@ -1,3 +1,0 @@
-.PHONY: bootstrap
-bootstrap:
-	@echo

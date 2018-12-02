@@ -21,6 +21,6 @@ include $(KAPP_ROOT)/common-makefiles/terraform/tf-validate.mk
 
 # Top-level targets. Some of these depend on the ones above.
 include $(KAPP_ROOT)/common-makefiles/install.mk
-include $(KAPP_ROOT)/common-makefiles/bootstrap.mk
+include $(KAPP_ROOT)/common-makefiles/post-install.mk
 include $(KAPP_ROOT)/common-makefiles/clean.mk
 include $(KAPP_ROOT)/common-makefiles/destroy.mk
