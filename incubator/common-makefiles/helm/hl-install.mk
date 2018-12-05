@@ -4,5 +4,6 @@ hl-install: hl-lint
 		$(RELEASE) $(CHART_DIR) \
 		-f values.yaml \
 		--namespace=$(NAMESPACE) \
+		--timeout 600 \
 		$(helm-params) \
 		$(local-helm-opts)
