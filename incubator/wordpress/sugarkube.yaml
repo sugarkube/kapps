@@ -26,4 +26,4 @@ targets:
       # all files that exists and prepend '-f' to them to be passed as options to helm.
       #
       - name: helm-opts
-        value: -f {{ listString "/values.yaml$" | findFiles .kapp.cacheRoot | uniq | join " " }} {{ mapPrintF "/values-%s.yaml$" .sugarkube.defaultVars | findFiles .kapp.cacheRoot | mapPrintF "-f %s" | uniq | join " " }}
+        value: --timeout 600 -f {{ listString "/values.yaml$" | findFiles .kapp.cacheRoot | uniq | join " " }} {{ mapPrintF "/values-%s.yaml$" .sugarkube.defaultVars | findFiles .kapp.cacheRoot | mapPrintF "-f %s" | uniq | join " " }}
