@@ -23,7 +23,7 @@ targets:
       #
       # So this horrific looking value searches for a file called 'values.yaml' under the kapp
       # cache directory, then files called `values-<provider/account/profile/etc>.yaml`. It takes
-      # all files that exists and prepend '-f' to them to be passed as options to helm.
+      # all files that exists and prepends '-f' to them so they can be passed as options to helm.
       #
       - name: helm-opts
         value: -f {{ listString "/values.yaml$" | findFiles .kapp.cacheRoot | uniq | join " " }} {{ mapPrintF "/values-%s.yaml$" .sugarkube.defaultVars | findFiles .kapp.cacheRoot | mapPrintF "-f %s" | uniq | join " " }}
