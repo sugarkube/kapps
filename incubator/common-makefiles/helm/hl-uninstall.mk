@@ -1,3 +1,7 @@
 .PHONY: hl-uninstall
 hl-uninstall:
-	$(HELM) delete --kube-context=$(KUBE_CONTEXT) --purge $(RELEASE)
+	if [ ! -z "$(KUBE_CONTEXT)" ]; then \
+		$(HELM) delete --kube-context=$(KUBE_CONTEXT) --purge $(RELEASE)
+	else \
+		echo No KUBE_CONTEXT configured, skipping helm uninstall... ;\
+	fi
