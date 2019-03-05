@@ -6,7 +6,7 @@ hl-lint:
 			-f values.yaml \
 			--namespace=$(NAMESPACE) \
 			$(helm-params) \
-			$(local-helm-opts)
+			$(local-helm-opts) ;\
 	else \
 		echo No KUBE_CONTEXT configured, skipping helm lint... ;\
 	fi

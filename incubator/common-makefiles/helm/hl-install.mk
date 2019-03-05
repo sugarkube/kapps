@@ -7,7 +7,7 @@ hl-install: hl-lint
 			--namespace=$(NAMESPACE) \
 			--timeout 600 \
 			$(helm-params) \
-			$(local-helm-opts)
+			$(local-helm-opts) ;\
 	else \
 		echo No KUBE_CONTEXT configured, skipping helm install... ;\
 	fi

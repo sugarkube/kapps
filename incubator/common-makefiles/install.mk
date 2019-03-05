@@ -1,6 +1,6 @@
 .PHONY: install
 install:
-	{ \
+	@{ \
 		set -e ;\
 		if [ "$$APPROVED" = "true" ]; then \
 			echo Approved. Installing kapp... ;\
