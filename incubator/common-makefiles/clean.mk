@@ -2,4 +2,4 @@
 clean: tf-clean
 	-rm *.log
 	-rm *.err
-	-rm -rf _generated_*
+	-find . -name '_generated_*' -delete

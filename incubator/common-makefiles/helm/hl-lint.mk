@@ -1,7 +1,7 @@
 .PHONY: hl-lint
 hl-lint:
 	if [ ! -z "$(KUBE_CONTEXT)" ]; then \
-		$(HELM) lint --kube-context=$(KUBE_CONTEXT) \
+		KUBECONFIG=$(KUBECONFIG) $(HELM) lint --kube-context=$(KUBE_CONTEXT) \
 			$(CHART_DIR) \
 			-f values.yaml \
 			--namespace=$(NAMESPACE) \

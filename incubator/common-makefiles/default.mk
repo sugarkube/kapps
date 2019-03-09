@@ -3,6 +3,9 @@ SHELL=/bin/bash
 # default make target
 include $(KAPP_ROOT)/common-makefiles/help.mk
 
+# kubectl vars
+include $(KAPP_ROOT)/common-makefiles/kubectl/vars.mk
+
 # helm targets
 include $(KAPP_ROOT)/common-makefiles/helm/vars.mk
 include $(KAPP_ROOT)/common-makefiles/helm/hl-install.mk
