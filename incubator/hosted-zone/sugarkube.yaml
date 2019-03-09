@@ -1,4 +1,4 @@
 envVars:
-  CLUSTER_NAME: "{{ .kapp.vars.cluster_name }}"
+  CLUSTER_NAME: "{{ .cluster_name }}"
   REGION: "{{ .stack.region }}"
-  PARENT_HOSTED_ZONE: "{{ .kapp.vars.parent_hosted_zone }}"
+  PARENT_HOSTED_ZONE: "{{ .parent_hosted_zone }}"
