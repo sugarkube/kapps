@@ -2,7 +2,7 @@
 hl-install: hl-lint
 	if [ ! -z "$(KUBE_CONTEXT)" ]; then \
 		KUBECONFIG=$(KUBECONFIG) $(HELM) upgrade --kube-context=$(KUBE_CONTEXT) \
-			--tiller-namespace=$(TILLER_NAMESPACE)
+			--tiller-namespace=$(TILLER_NAMESPACE) \
 			--wait --install \
 			$(RELEASE) $(CHART_DIR) \
 			-f values.yaml \
