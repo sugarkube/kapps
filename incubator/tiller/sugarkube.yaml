@@ -11,3 +11,6 @@ version: 0.1.0
 envVars:
   KUBE_CONTEXT: "{{.kube_context}}"
   RELEASE: "{{.kapp.id}}"
+
+requires:
+  - kubectl

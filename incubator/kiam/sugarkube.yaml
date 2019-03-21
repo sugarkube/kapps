@@ -1,2 +1,3 @@
 requires:
   - cfssl
+  - helm

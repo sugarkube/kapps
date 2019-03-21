@@ -2,11 +2,6 @@
 # text functions.  Variable values come from the final set of variables
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
 
-# The 'extras' key lets you store arbitrary data, e.g. for use in your CD pipeline
-extras:
-  requires:
-    - cfssl
-
 # Env vars to pass to this kapp. Values can come from variables.
 envVars:
   KUBE_CONTEXT: "{{.kube_context}}"
@@ -32,3 +27,7 @@ targets:
       #
       - name: helm-opts
         value: -f {{ listString "/values.yaml$" | findFiles .kapp.cacheRoot | uniq | join " " }} {{ mapPrintF "/values-%s.yaml$" .sugarkube.defaultVars | findFiles .kapp.cacheRoot | mapPrintF "-f %s" | uniq | join " " }}
+
+requires:
+  - helm
+  - cfssl
