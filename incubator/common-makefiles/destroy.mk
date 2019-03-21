@@ -3,8 +3,8 @@ destroy:
 	{ \
 		set -e ;\
 		if [ "$$APPROVED" = "true" ]; then \
-			make tf-destroy ;\
 			make hl-uninstall ;\
+			make tf-destroy ;\
 		else \
 			echo Rerun this task setting 'APPROVED=true' to uninstall this kapp ;\
 		fi \
