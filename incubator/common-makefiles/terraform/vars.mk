@@ -1,4 +1,5 @@
-TERRAFORM=$(shell which terraform)
+RUN_TERRAFORM?=true
+TERRAFORM?=$(shell which terraform)
 TERRAFORM_DIR?=terraform_$(PROVIDER)
 
 tf-opts?=

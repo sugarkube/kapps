@@ -1,3 +1,4 @@
+RUN_HELM?=true
 HELM?=$(shell which helm)
 
 CHART=$(shell basename `pwd`)
