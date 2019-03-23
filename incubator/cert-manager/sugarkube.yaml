@@ -9,9 +9,9 @@ envVars:
   RELEASE: "{{.kapp.id}}"
 
 # Defines arguments to different targets.
-targets:
-  install:
-    args:
+args:
+  make:
+    install:
       # Search for parameters dynamically. The `findFiles` function takes a list of
       # file name patterns and a starting directory to search from. It then recursively
       # searches for a single file matching the pattern. If one (and only one) is found,
