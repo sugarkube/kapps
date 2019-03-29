@@ -42,4 +42,4 @@ endif
 include $(KAPP_ROOT)/common-makefiles/install.mk
 include $(KAPP_ROOT)/common-makefiles/post-install.mk
 include $(KAPP_ROOT)/common-makefiles/clean.mk
-include $(KAPP_ROOT)/common-makefiles/destroy.mk
+include $(KAPP_ROOT)/common-makefiles/delete.mk
