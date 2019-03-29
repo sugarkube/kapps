@@ -1,5 +1,5 @@
-.PHONY: destroy
-destroy:
+.PHONY: delete
+delete:
 	{ \
 		set -e ;\
 		if [ "$$APPROVED" = "true" ]; then \

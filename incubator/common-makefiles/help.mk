@@ -26,4 +26,4 @@ help:
 	@echo Terraform-specific:
 	@echo \* TERRAFORM_DIR=\<dir\> - to run terraform against relative dirs. Default \'terraform_\<PROVIDER\>\'
 	@echo
-	@echo To delete, run \"make destroy\".
+	@echo To delete, run \"make delete\".
