@@ -1,6 +1,7 @@
 KAPP_ROOT?=$(dir $(PWD))
 NAMESPACE?=kube-system
 include $(KAPP_ROOT)/common-makefiles/helm/vars.mk
+include $(KAPP_ROOT)/common-makefiles/kubectl/vars.mk
 
 .PHONY: install
 install:
