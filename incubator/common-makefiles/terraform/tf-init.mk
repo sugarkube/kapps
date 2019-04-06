@@ -3,13 +3,13 @@
 tf-init:
 	{ \
 		set -e ;\
-		if [ -d "$(TERRAFORM_DIR)" ]; then \
+		if [ -d "$(TERRAFORM_DIR)" ] && [ ! -z "$(TERRAFORM)" ]; then \
 			if [ ! -d "$(TERRAFORM_DIR)/.terraform" ]; then \
 			  cd $(TERRAFORM_DIR) && $(TERRAFORM) init && cd .. ;\
 			else \
 			  echo "Terraform already initialised" ;\
 			fi ;\
 		else \
-			echo [$@] No $(TERRAFORM_DIR) directory, skipping... ;\
+		echo [$@] No $(TERRAFORM_DIR) directory or blank TERRAFORM path, skipping... ;\
 		fi \
 	}
