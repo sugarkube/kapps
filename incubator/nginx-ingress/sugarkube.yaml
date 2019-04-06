@@ -7,6 +7,10 @@ envVars:
   KUBE_CONTEXT: "{{ .kube_context }}"
   NAMESPACE: "{{ .kapp.vars.namespace | default .kapp.id }}"
   RELEASE: "{{ .kapp.vars.release | default .kapp.id }}"
+  INGRESS_CLASS: "{{ .kapp.vars.ingress_class }}"
+
+vars:
+  ingress_class: nginx
 
 # Defines arguments to different targets.
 args:
