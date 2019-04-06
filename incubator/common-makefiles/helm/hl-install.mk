@@ -6,7 +6,6 @@ hl-install: hl-lint
 			--tiller-namespace=$(TILLER_NAMESPACE) \
 			--wait --install \
 			$(RELEASE) $(CHART_DIR) \
-			-f values.yaml \
 			--namespace=$(NAMESPACE) \
 			--timeout 600 \
 			$(helm-params) \
