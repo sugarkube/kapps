@@ -9,8 +9,23 @@ version: 0.1.0
 
 # Env vars to pass to this kapp. Values can come from variables.
 envVars:
-  KUBE_CONTEXT: "{{.kube_context}}"
-  RELEASE: "{{.kapp.id}}"
+  TILLER_NAMESPACE: "{{ .kapp.vars.tiller_namespace }}"
+  SERVICE_ACCOUNT: "{{ .kapp.vars.service_account }}"
+  KUBE_CONTEXT: "{{ .kube_context }}"
+  KUBECONFIG: "{{ .kube_config }}"
+  TEMPLATED_PATH: "{{ index .kapp.templates 0 }}"
+  ROLE_BINDING: "{{ .kapp.vars.role_binding | default \"ClusterRoleBinding\" }}"
+  ROLE: "{{ .kapp.vars.role | default \"ClusterRole\" }}"
+  ROLE_NAME: "{{ .kapp.vars.role_name | default \"cluster-admin\" }}"
+
+templates:
+  - source: kapp-templates/rbac.yaml
+    dest: _generated_rbac.yaml
+
+vars:
+  service_account: tiller
+  tiller_namespace: kube-system
 
 requires:
   - kubectl
+  - helm
