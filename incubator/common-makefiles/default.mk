@@ -43,6 +43,7 @@ endif
 # Top-level targets. Some of these depend on the ones above.
 ifeq ($(ENABLED),true)
 include $(KAPP_ROOT)/common-makefiles/install.mk
+include $(KAPP_ROOT)/common-makefiles/pre-install.mk
 include $(KAPP_ROOT)/common-makefiles/post-install.mk
 include $(KAPP_ROOT)/common-makefiles/clean.mk
 include $(KAPP_ROOT)/common-makefiles/delete.mk
