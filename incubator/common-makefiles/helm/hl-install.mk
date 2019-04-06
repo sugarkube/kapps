@@ -1,6 +1,7 @@
 .PHONY: hl-install
 hl-install: hl-lint
 	if [ ! -z "$(KUBE_CONTEXT)" ]; then \
+		echo Installing helm chart... ;\
 		KUBECONFIG=$(KUBECONFIG) $(HELM) upgrade --kube-context=$(KUBE_CONTEXT) \
 			--tiller-namespace=$(TILLER_NAMESPACE) \
 			--wait --install \
