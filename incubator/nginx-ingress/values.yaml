@@ -5,7 +5,7 @@ nginx-ingress:
       externalTrafficPolicy: Local
 
     config:
-      server-tokens: false
+      server-tokens: "false"
 
 cert:
   name: self-signed-clusterissuer     # name of the cert manager cluster issuer
