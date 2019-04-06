@@ -1,4 +1,5 @@
 SHELL=/bin/bash
+ENABLED?=true
 
 # default make target
 include $(KAPP_ROOT)/common-makefiles/help.mk
@@ -40,7 +41,12 @@ tf-destroy:
 endif
 
 # Top-level targets. Some of these depend on the ones above.
+ifeq ($(ENABLED),true)
 include $(KAPP_ROOT)/common-makefiles/install.mk
 include $(KAPP_ROOT)/common-makefiles/post-install.mk
 include $(KAPP_ROOT)/common-makefiles/clean.mk
 include $(KAPP_ROOT)/common-makefiles/delete.mk
+else
+install:
+delete:
+endif
