@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    certmanager.k8s.io/disable-validation: "true"
+  name: {{ .kapp.vars.namespace | default .kapp.id }}
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
