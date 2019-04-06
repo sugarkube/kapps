@@ -10,6 +10,7 @@ install:
 			make hl-install ;\
 			make post-install ;\
 		else \
+			make pre-install ;\
 			make hl-lint ;\
 			make tf-plan ;\
 			echo Rerun this task setting 'APPROVED=true' to install this kapp ;\
