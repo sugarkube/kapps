@@ -2,7 +2,7 @@
 tf-validate: tf-fmt
 	if [ -d "$(TERRAFORM_DIR)" ]; then \
 		cd $(TERRAFORM_DIR) && $(TERRAFORM) validate \
-		  $(tf-params)\
+		  $(tf-params) \
 		  $(local-tf-opts) \
 		&& cd .. ;\
 	else \

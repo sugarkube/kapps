@@ -30,6 +30,7 @@ include $(KAPP_ROOT)/common-makefiles/terraform/tf-fmt.mk
 include $(KAPP_ROOT)/common-makefiles/terraform/tf-init.mk
 include $(KAPP_ROOT)/common-makefiles/terraform/tf-plan.mk
 include $(KAPP_ROOT)/common-makefiles/terraform/tf-validate.mk
+include $(KAPP_ROOT)/common-makefiles/terraform/tf-output.mk
 else
 $(info RUN_TERRAFORM variable is not 'true'. Terraform won't be run.)
 # no-op targets so make doesn't output errors
