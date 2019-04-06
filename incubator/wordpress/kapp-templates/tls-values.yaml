@@ -1,0 +1,6 @@
+wordpress:
+  ingress:
+    hosts:
+      - name: {{ .kapp.vars.hostname }}
+        tls: "true"
+        certificate: {{ .kapp.vars.release | default .kapp.id }}-tls
