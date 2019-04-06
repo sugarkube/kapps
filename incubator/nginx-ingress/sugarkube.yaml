@@ -4,9 +4,9 @@
 
 # Env vars to pass to this kapp. Values can come from variables.
 envVars:
-  KUBE_CONTEXT: "{{.kube_context}}"
-  NAMESPACE: "{{.kapp.id}}"
-  RELEASE: "{{.kapp.id}}"
+  KUBE_CONTEXT: "{{ .kube_context }}"
+  NAMESPACE: "{{ .kapp.vars.namespace | default .kapp.id }}"
+  RELEASE: "{{ .kapp.vars.release | default .kapp.id }}"
 
 # Defines arguments to different targets.
 args:
