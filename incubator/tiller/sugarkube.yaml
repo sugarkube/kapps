@@ -14,9 +14,9 @@ envVars:
   TILLER_NAMESPACE: "{{ .kapp.vars.tiller_namespace }}"
   SERVICE_ACCOUNT: "{{ .kapp.vars.service_account }}"
   TEMPLATED_PATH: "{{ index .kapp.templates 0 }}"
-  ROLE_BINDING: "{{ .kapp.vars.role_binding | default \"ClusterRoleBinding\" }}"
-  ROLE: "{{ .kapp.vars.role | default \"ClusterRole\" }}"
-  ROLE_NAME: "{{ .kapp.vars.role_name | default \"cluster-admin\" }}"
+  ROLE_BINDING: "{{ .kapp.vars.role_binding }}"
+  ROLE: "{{ .kapp.vars.role }}"
+  ROLE_NAME: "{{ .kapp.vars.role_name }}"
 
 templates:
   - source: k8s/rbac.tpl.yaml
@@ -25,6 +25,9 @@ templates:
 vars:
   service_account: tiller
   tiller_namespace: kube-system
+  role: ClusterRole
+  role_name: cluster-admin
+  role_binding: ClusterRoleBinding
 
 requires:
   - kubectl

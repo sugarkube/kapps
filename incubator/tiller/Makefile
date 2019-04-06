@@ -1,5 +1,9 @@
 KAPP_ROOT?=$(dir $(PWD))
 NAMESPACE?=kube-system
+ROLE_BINDING?=ClusterRoleBinding
+ROLE?=ClusterRole
+ROLE_NAME?=cluster-admin
+
 include $(KAPP_ROOT)/common-makefiles/helm/vars.mk
 include $(KAPP_ROOT)/common-makefiles/kubectl/vars.mk
 
@@ -34,7 +38,7 @@ delete:
 			KUBECONFIG=$(KUBECONFIG) $(KUBECTL) --context=$(KUBE_CONTEXT) --namespace=$(TILLER_NAMESPACE) \
 				delete $(ROLE_BINDING) $(SERVICE_ACCOUNT) ;\
 			KUBECONFIG=$(KUBECONFIG) $(KUBECTL) --context=$(KUBE_CONTEXT) --namespace=$(TILLER_NAMESPACE) \
-				delete $(ROLE) $(ROLE_NAME) ;\
+				delete ServiceAccount $(SERVICE_ACCOUNT) ;\
 		else \
 			echo Rerun this task setting 'APPROVED=true' to delete this kapp ;\
 		fi \
