@@ -6,6 +6,8 @@ wordpress:
   allowEmptyPassword: false
   ingress:
     enabled: true
+  service:
+    type: ClusterIP        # rely on an ingress to serve traffic
 
   mariadb:
     enabled: false      # use RDS instead, except locally
