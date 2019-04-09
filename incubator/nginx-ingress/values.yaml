@@ -3,10 +3,12 @@ nginx-ingress:
     service:
       type: NodePort
       externalTrafficPolicy: Local
-      nodePorts:
-        http: 30080
-        https: 30443
+      enableHttp: false           # Disable HTTP traffic. Only HTTPS traffic will be served
+
+    config:
+      server-tokens: "false"
+
 
 cert:
-  name: ca-cluster-issuer     # name of the cert manager cluster issuer
+  name: self-signed-clusterissuer     # name of the cert manager cluster issuer
   kind: ClusterIssuer

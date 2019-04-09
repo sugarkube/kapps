@@ -1,0 +1,19 @@
+# from https://docs.helm.sh/using_helm
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .kapp.vars.service_account }}
+  namespace: {{ .kapp.vars.tiller_namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: {{ .kapp.vars.role_binding }}
+metadata:
+  name: {{ .kapp.vars.service_account }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: {{ .kapp.vars.role }}
+  name: {{ .kapp.vars.role_name }}
+subjects:
+- kind: ServiceAccount
+  name: {{ .kapp.vars.service_account }}
+  namespace: {{ .kapp.vars.tiller_namespace }}

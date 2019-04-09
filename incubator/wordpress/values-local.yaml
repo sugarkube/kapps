@@ -1,5 +1,3 @@
 wordpress:
   mariadb:
     enabled: true
-
-  serviceType: NodePort

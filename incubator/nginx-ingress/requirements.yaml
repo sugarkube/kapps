@@ -1,5 +1,5 @@
 # Standard Helm requirements.yaml file
 dependencies:
 - name: nginx-ingress
-  version: "0.25.1"
+  version: "1.4.0"
   repository: "@stable"

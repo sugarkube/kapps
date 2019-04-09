@@ -6,7 +6,6 @@ install:
 			echo Approved. Installing kapp... ;\
 			echo ;\
 			make tf-apply ;\
-			echo Installing helm chart ;\
 			make hl-install ;\
 			make post-install ;\
 		else \

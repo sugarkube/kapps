@@ -1,6 +1,6 @@
 .PHONY: hl-lint
 hl-lint:
-	if [ ! -z "$(KUBE_CONTEXT)" ]; then \
+	if [ ! -z "$(KUBE_CONTEXT)" ] && [ ! -z "$(HELM)" ]; then \
 		KUBECONFIG=$(KUBECONFIG) $(HELM) lint --kube-context=$(KUBE_CONTEXT) \
 			$(CHART_DIR) \
 			-f values.yaml \
@@ -8,5 +8,5 @@ hl-lint:
 			$(helm-params) \
 			$(local-helm-opts) ;\
 	else \
-		echo No KUBE_CONTEXT configured, skipping helm lint... ;\
+		echo No KUBE_CONTEXT configured or blank HELM path. Skipping helm lint... ;\
 	fi

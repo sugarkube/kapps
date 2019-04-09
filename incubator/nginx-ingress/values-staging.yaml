@@ -1,11 +1,13 @@
 nginx-ingress:
   controller:
+    stats:
+      enabled: "true"
     metrics:
-      enabled: true
+      enabled: "true"
     service:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "10254"
 
-    stats:
-      enabled: true
+    config:
+      ssl-redirect: "true"
