@@ -5,7 +5,7 @@
 # Env vars to pass to this kapp. Values can come from variables.
 envVars:
   KUBE_CONTEXT: "{{ .kube_context }}"
-  KUBECONFIG: "{{ .kube_config }}"
+  KUBECONFIG: "{{ .kubeconfig }}"
   NAMESPACE: "{{ .kapp.vars.namespace | default .kapp.id }}"
   RELEASE: "{{ .kapp.vars.release | default .kapp.id }}"
   TEMPLATED_PATH: "{{ index .kapp.templates 0 }}"

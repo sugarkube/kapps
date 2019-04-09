@@ -10,7 +10,7 @@ version: 0.1.0
 # Env vars to pass to this kapp. Values can come from variables.
 envVars:
   KUBE_CONTEXT: "{{ .kube_context }}"
-  KUBECONFIG: "{{ .kube_config }}"
+  KUBECONFIG: "{{ .kubeconfig }}"
   TILLER_NAMESPACE: "{{ .kapp.vars.tiller_namespace }}"
   SERVICE_ACCOUNT: "{{ .kapp.vars.service_account }}"
   TEMPLATED_PATH: "{{ index .kapp.templates 0 }}"
