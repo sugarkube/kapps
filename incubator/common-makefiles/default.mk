@@ -47,6 +47,7 @@ include $(KAPP_ROOT)/common-makefiles/pre-install.mk
 include $(KAPP_ROOT)/common-makefiles/post-install.mk
 include $(KAPP_ROOT)/common-makefiles/clean.mk
 include $(KAPP_ROOT)/common-makefiles/delete.mk
+include $(KAPP_ROOT)/common-makefiles/output.mk
 else
 install:
 delete:
