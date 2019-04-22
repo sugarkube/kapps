@@ -4,10 +4,6 @@
 
 # Env vars to pass to this kapp. Values can come from variables.
 envVars:
-  KUBE_CONTEXT: "{{ .kube_context }}"
-  KUBECONFIG: "{{ .kubeconfig }}"
-  NAMESPACE: "{{ .kapp.vars.namespace | default .kapp.id }}"
-  RELEASE: "{{ .kapp.vars.release | default .kapp.id }}"
   TEMPLATED_PATH: "{{ index .kapp.templates 0 }}"
 
 # todo - implement
@@ -18,16 +14,6 @@ envVars:
 templates:
   - source: k8s/namespace.tpl.yaml
     dest: k8s/_generated_namespace.yaml
-
-# Defines arguments to different targets.
-args:
-  make:
-    install:
-      - name: helm-opts
-        value: -f {{ listString "/values.yaml$" | findFiles .kapp.cacheRoot | uniq | join " " }} {{ mapPrintF "/values-%s.yaml$" .sugarkube.defaultVars | findFiles .kapp.cacheRoot | mapPrintF "-f %s" | uniq | join " " }}
-    delete:
-      - name: helm-opts
-        value: -f {{ listString "/values.yaml$" | findFiles .kapp.cacheRoot | uniq | join " " }} {{ mapPrintF "/values-%s.yaml$" .sugarkube.defaultVars | findFiles .kapp.cacheRoot | mapPrintF "-f %s" | uniq | join " " }}
 
 requires:
   - kubectl
