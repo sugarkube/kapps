@@ -1,6 +1,6 @@
 .PHONY: hl-lint
 hl-lint:
-	if [ ! -z "$(KUBE_CONTEXT)" ] && [ ! -z "$(HELM)" ]; then \
+	if [ ! -z "$(KUBE_CONTEXT)" ] && [ ! -z "$(HELM)" ] && [ -f "$(CHART_DIR)/.Chart.yaml" ]; then \
 		KUBECONFIG=$(KUBECONFIG) $(HELM) lint --kube-context=$(KUBE_CONTEXT) \
 			$(CHART_DIR) \
 			-f values.yaml \
