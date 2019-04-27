@@ -3,7 +3,7 @@ tf-plan: tf-validate
 	if [ -d "$(TERRAFORM_DIR)" ] && [ ! -z "$(TERRAFORM)" ]; then \
 		cd $(TERRAFORM_DIR) && \
 		$(TERRAFORM) plan -refresh=true -out _generated_plan.tfplan \
-		  $(tf-params)\
+		  $(tf-params) \
 		  $(local-tf-opts) && \
 		cd .. ;\
 	else \

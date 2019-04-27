@@ -32,12 +32,14 @@ include $(KAPP_ROOT)/common-makefiles/terraform/tf-init.mk
 include $(KAPP_ROOT)/common-makefiles/terraform/tf-plan.mk
 include $(KAPP_ROOT)/common-makefiles/terraform/tf-validate.mk
 include $(KAPP_ROOT)/common-makefiles/terraform/tf-output.mk
+include $(KAPP_ROOT)/common-makefiles/terraform/tf-refresh.mk
 else
 $(info RUN_TERRAFORM variable is not 'true'. Terraform won't be run.)
 # no-op targets so make doesn't output errors
 tf-apply:
 tf-plan:
 tf-destroy:
+tf-output:
 endif
 
 # Top-level targets. Some of these depend on the ones above.
@@ -51,4 +53,5 @@ include $(KAPP_ROOT)/common-makefiles/output.mk
 else
 install:
 delete:
+output:
 endif
