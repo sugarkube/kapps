@@ -13,7 +13,7 @@ hl-uninstall:
 						--tiller-namespace=$(TILLER_NAMESPACE) \
 						--kube-context=$(KUBE_CONTEXT) --purge $(RELEASE) ;\
 				else \
-			echo No KUBE_CONTEXT configured, blank HELM path or couldn't find Chart.yaml. Skipping helm uninstall... ;\
+			echo "No KUBE_CONTEXT configured, blank HELM path or couldn't find Chart.yaml. Skipping helm uninstall..." ;\
 				fi \
 			fi \
 		fi \

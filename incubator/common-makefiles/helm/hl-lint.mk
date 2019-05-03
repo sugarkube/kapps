@@ -8,5 +8,5 @@ hl-lint:
 			$(helm-params) \
 			$(local-helm-opts) ;\
 	else \
-		echo No KUBE_CONTEXT configured, blank HELM path or couldn't find Chart.yaml. Skipping helm lint... ;\
+		echo "No KUBE_CONTEXT configured, blank HELM path or couldn't find Chart.yaml. Skipping helm lint..." ;\
 	fi

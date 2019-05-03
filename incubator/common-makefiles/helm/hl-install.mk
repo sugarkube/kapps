@@ -11,5 +11,5 @@ hl-install: hl-lint
 			$(helm-params) \
 			$(local-helm-opts) ;\
 	else \
-		echo No KUBE_CONTEXT configured, blank HELM path or couldn't find Chart.yaml. Skipping helm install... ;\
+		echo "No KUBE_CONTEXT configured, blank HELM path or couldn't find Chart.yaml. Skipping helm install..." ;\
 	fi
