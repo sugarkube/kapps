@@ -5,6 +5,7 @@ hl-install: hl-lint
 		KUBECONFIG=$(KUBECONFIG) $(HELM) upgrade --kube-context=$(KUBE_CONTEXT) \
 			--tiller-namespace=$(TILLER_NAMESPACE) \
 			--wait --install \
+			--recreate-pods \
 			$(RELEASE) $(CHART_DIR) \
 			--namespace=$(NAMESPACE) \
 			--timeout 600 \
