@@ -8,7 +8,7 @@
 version: 0.1.0
 
 # Env vars to pass to this kapp. Values can come from variables.
-envVars:
+env_vars:
   TEMPLATED_PATH: "{{ index .kapp.templates 0 }}"
 
 templates:
