@@ -1,41 +1,6 @@
 # This file is a golang template that supports sprig (https://masterminds.github.io/sprig/)
 # text functions.  Variable values come from the final set of variables
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
-
-# Env vars to pass to this kapp. Values can come from variables.
-envVars:
-  KUBE_CONTEXT: "{{.kube_context}}"
-  NAMESPACE: "{{.kapp.id}}"
-  RELEASE: "{{.kapp.id}}"
-
-# Defines arguments to different targets.
-args:
-  make:
-    install:
-      # Search for parameters dynamically. The `findFiles` function takes a list of
-      # file name patterns and a starting directory to search from. It then recursively
-      # searches for a single file matching the pattern. If one (and only one) is found,
-      # it's returned in the result array. Patterns that don't match any files are
-      # filtered out.
-      #
-      # The `.sugarkube.defaultVars` variable is a list populated at runtime containing (in
-      # order of precedence: provider, account, profile, cluster, region.
-      #
-      # So this horrific looking value searches for a file called 'values.yaml' under the kapp
-      # cache directory, then files called `values-<provider/account/profile/etc>.yaml`. It takes
-      # all files that exists and prepend '-f' to them to be passed as options to helm.
-      #
-      helm-params: -f {{ listString "/values.yaml$" | findFiles .kapp.cacheRoot | uniq | join " " }} {{ mapPrintF "/values-%s.yaml$" .sugarkube.defaultVars | findFiles .kapp.cacheRoot | mapPrintF "-f %s" | uniq | join " " }}
-
-      # search for terraform vars files under `terraform_<provider>`
-      tf-params: -var-file {{ listString (printf "terraform_%s/.*/defaults.tfvars" .stack.provider) | findFiles .kapp.cacheRoot | uniq | join " " }} {{ mapPrintF (printf "terraform_%s/.*/%%s.tfvars" .stack.provider) .sugarkube.defaultVars | findFiles .kapp.cacheRoot | mapPrintF "-var-file %s" | uniq | join " " }}
-
-    delete:
-      helm-params: -f {{ listString "/values.yaml$" | findFiles .kapp.cacheRoot | uniq | join " " }} {{ mapPrintF "/values-%s.yaml$" .sugarkube.defaultVars | findFiles .kapp.cacheRoot | mapPrintF "-f %s" | uniq | join " " }}
-
-      # search for terraform vars files under `terraform_<provider>`
-      tf-params: -var-file {{ listString (printf "terraform_%s/.*/defaults.tfvars" .stack.provider) | findFiles .kapp.cacheRoot | uniq | join " " }} {{ mapPrintF (printf "terraform_%s/.*/%%s.tfvars" .stack.provider) .sugarkube.defaultVars | findFiles .kapp.cacheRoot | mapPrintF "-var-file %s" | uniq | join " " }}
-
 requires:
   - jq
   - helm
