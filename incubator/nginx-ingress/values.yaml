@@ -8,7 +8,6 @@ nginx-ingress:
     config:
       server-tokens: "false"
 
-
 cert:
   name: self-signed-clusterissuer     # name of the cert manager cluster issuer
   kind: ClusterIssuer
