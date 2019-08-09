@@ -2,6 +2,5 @@
 # text functions.  Variable values come from the final set of variables
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
 requires:
-  - jq
   - helm
   - terraform
