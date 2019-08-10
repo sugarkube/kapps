@@ -1,17 +1,9 @@
-cert:
-  name: ca-cluster-issuer     # name of the cert manager cluster issuer
-  kind: ClusterIssuer
-
 jenkins:
-  Master:
-    ServiceType: NodePort
-    Ingress:
-      Annotations:
-        kubernetes.io/ingress.class: "nginx"
-#      TLS:      # set in _generated_values.yaml because we can't do it on the CLI
+  master:
+    serviceType: NodePort
 
   rbac:
     install: true
 
-  NetworkPolicy:
-    Enabled: true
+  networkPolicy:
+    enabled: true
