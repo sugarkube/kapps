@@ -1,0 +1,9 @@
+keycloak:
+  keycloak:
+    ingress:
+      hosts:
+        - {{ .kapp.vars.release }}.{{ .cluster_name }}
+    tls:
+      - hosts:
+          - {{ .kapp.vars.release }}.{{ .cluster_name }}
+        secretName: {{ .kapp.vars.release }}-cert
