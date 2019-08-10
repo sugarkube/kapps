@@ -7,7 +7,7 @@ include $(KAPP_ROOT)/common-makefiles/default.mk
 post-install:
 	{ \
 		set -e ;\
-		if [ "$(PROFILE)" == "local" ]; then \
+		if [ "$(PROVIDER)" == "local" ]; then \
 			echo "Sleeping before populating database..." ;\
 			sleep 60 ;\
 			KUBECONFIG=$(KUBECONFIG) $(KUBECTL) --context=$(KUBE_CONTEXT) -n $(NAMESPACE) \
