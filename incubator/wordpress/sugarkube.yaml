@@ -6,7 +6,7 @@ vars:
   hostname: wordpress.localhost
 
 templates:
-  - source: kapp-templates/tls-values.yaml
+  - source: kapp-templates/values.tpl.yaml
     dest: _generated_values.yaml
 
 requires:

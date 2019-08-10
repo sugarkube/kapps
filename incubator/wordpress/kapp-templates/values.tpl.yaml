@@ -4,3 +4,7 @@ wordpress:
       - name: {{ .kapp.vars.hostname }}
         tls: "true"
         certificate: {{ .kapp.vars.release | default .kapp.id }}-tls
+
+cert:
+  kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
+  name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}
