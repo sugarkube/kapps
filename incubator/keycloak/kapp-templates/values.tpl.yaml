@@ -7,3 +7,7 @@ keycloak:
       - hosts:
           - {{ .kapp.vars.release }}.{{ .cluster_name }}
         secretName: {{ .kapp.vars.release }}-cert
+
+cert:
+  name: {{ .outputs.bootstrap__nginx_ingress.values.cert.name }}
+  kind: {{ .outputs.bootstrap__nginx_ingress.values.cert.kind }}
