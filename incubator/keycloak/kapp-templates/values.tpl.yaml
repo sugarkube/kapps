@@ -9,5 +9,5 @@ keycloak:
         secretName: {{ .kapp.vars.release }}-cert
 
 cert:
-  name: {{ .outputs.bootstrap__nginx_ingress.values.cert.name }}
-  kind: {{ .outputs.bootstrap__nginx_ingress.values.cert.kind }}
+  kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
+  name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}
