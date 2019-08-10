@@ -2,8 +2,5 @@ jenkins:
   master:
     serviceType: NodePort
 
-  rbac:
-    install: true
-
   networkPolicy:
     enabled: true

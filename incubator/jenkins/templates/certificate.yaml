@@ -18,8 +18,8 @@ spec:
   - {{ template "jenkins.name" . }}.{{ .Release.Namespace }}
   - {{ template "jenkins.name" . }}.{{ .Release.Namespace }}.svc
   - {{ template "jenkins.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
-{{- if .Values.jenkins.Master.Ingress.TLS }}
-  {{- range .Values.jenkins.Master.Ingress.TLS }}
+{{- if .Values.jenkins.master.ingress.tls }}
+  {{- range .Values.jenkins.master.ingress.tls }}
     {{- range .hosts }}
   - {{ . }}
     {{- end }}
