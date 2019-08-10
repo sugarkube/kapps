@@ -6,11 +6,6 @@
 env_vars:
   TEMPLATED_PATH: "{{ index .kapp.templates 0 }}"
 
-# todo - implement
-#varsTemplate: |
-#  namespace: "{{ .kapp.vars.namespace | default .kapp.id }}"
-#  release: "{{ .kapp.vars.release | default .kapp.id }}"
-
 templates:
   - source: k8s/namespace.tpl.yaml
     dest: k8s/_generated_namespace.yaml
@@ -18,3 +13,10 @@ templates:
 requires:
   - kubectl
   - helm
+
+# load the cluster issuer YAML file so other kapps can refer to it through a variable instead of by hard-coding
+# its name or kind.
+outputs:
+  - format: yaml
+    id: clusterIssuer
+    path: templates/clusterissuer.yaml
