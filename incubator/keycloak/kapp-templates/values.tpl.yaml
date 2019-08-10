@@ -3,10 +3,10 @@ keycloak:
     ingress:
       hosts:
         - {{ .kapp.vars.release }}.{{ .cluster_name }}
-    tls:
-      - hosts:
-          - {{ .kapp.vars.release }}.{{ .cluster_name }}
-        secretName: {{ .kapp.vars.release }}-cert
+      tls:
+        - hosts:
+            - {{ .kapp.vars.release }}.{{ .cluster_name }}
+          secretName: {{ .kapp.vars.release }}-cert
 
 cert:
   kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
