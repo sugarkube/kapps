@@ -18,8 +18,8 @@ spec:
   - {{ template "prometheus.name" . }}.{{ .Release.Namespace }}
   - {{ template "prometheus.name" . }}.{{ .Release.Namespace }}.svc
   - {{ template "prometheus.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
-{{- if .Values.prometheus.prometheus.ingress.tls }}
-  {{- range .Values.prometheus.ingress.tls }}
+{{- if .Values.prometheus.server.ingress.tls }}
+  {{- range .Values.prometheus.server.ingress.tls }}
     {{- range .hosts }}
   - {{ . }}
     {{- end }}
