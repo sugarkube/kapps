@@ -1,0 +1,14 @@
+prometheus-operator:
+  prometheus:
+    ingress:
+      enabled: true
+      hosts:
+        - {{ .kapp.vars.prometheusName }}.{{ .cluster_name }}
+      tls:
+        - hosts:
+            - {{ .kapp.vars.prometheusName }}.{{ .cluster_name }}
+          secretName: {{ .kapp.vars.release }}-cert
+
+cert:
+  kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
+  name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}

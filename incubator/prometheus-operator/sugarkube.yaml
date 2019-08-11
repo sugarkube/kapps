@@ -4,3 +4,10 @@
 requires:
   - helm
   - terraform
+
+templates:
+  - source: kapp-templates/values.tpl.yaml
+    dest: _generated_values.yaml
+
+vars:
+  prometheusName: prometheus
