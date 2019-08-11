@@ -1,0 +1,5 @@
+# Standard Helm requirements.yaml file
+dependencies:
+- name: grafana
+  version: "3.8.1"
+  repository: "@stable"

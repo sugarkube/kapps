@@ -1,0 +1,10 @@
+# This file is a golang template that supports sprig (https://masterminds.github.io/sprig/)
+# text functions.  Variable values come from the final set of variables
+# applicable to the stack/profile/cluster/etc that you install this kapp into.
+requires:
+  - helm
+  - terraform
+
+templates:
+  - source: kapp-templates/values.tpl.yaml
+    dest: _generated_values.yaml
