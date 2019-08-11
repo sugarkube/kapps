@@ -1,0 +1,27 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: {{ template "prometheus.name" . }}-cert
+  labels:
+    app: {{ template "prometheus.name" . }}
+    chart: {{ template "prometheus.chart" . }}
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+spec:
+  secretName: {{ template "prometheus.name" . }}-cert
+  issuerRef:
+    name: {{ .Values.cert.name }}
+    kind: {{ .Values.cert.kind }}
+  commonName: {{ template "prometheus.name" . }}
+  dnsNames:
+  - {{ template "prometheus.name" . }}
+  - {{ template "prometheus.name" . }}.{{ .Release.Namespace }}
+  - {{ template "prometheus.name" . }}.{{ .Release.Namespace }}.svc
+  - {{ template "prometheus.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
+{{- if .Values.prometheus.prometheus.ingress.tls }}
+  {{- range .Values.prometheus.ingress.tls }}
+    {{- range .hosts }}
+  - {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end }}

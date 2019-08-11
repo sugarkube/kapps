@@ -1,0 +1,5 @@
+# Standard Helm requirements.yaml file
+dependencies:
+- name: prometheus
+  version: "8.15.0"
+  repository: "@stable"
