@@ -7,10 +7,6 @@
 # in our CD pipeline.
 version: 0.1.0
 
-# Env vars to pass to this kapp. Values can come from variables.
-env_vars:
-  TEMPLATED_PATH: "{{ index .kapp.templates 0 }}"
-
 templates:
   - source: k8s/rbac.tpl.yaml
     dest: k8s/_generated_rbac.yaml
@@ -22,7 +18,36 @@ vars:
   role: ClusterRole
   role_name: cluster-admin
   role_binding: ClusterRoleBinding
+  templated_path: "{{ index .kapp.templates 0 }}"
 
 requires:
   - kubectl
   - helm
+
+# this uses the helm binary but doesn't use the default run steps
+run_units:
+  helm:
+    working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.id }}"       # directory to use as the working directory
+    plan_install:
+    apply_install:
+      - name: install RBAC
+        command: "{{ .kapp.vars.kubectl }}"
+        args:
+          - --context={{ .kapp.vars.kube_context }}
+          - --namespace={{ .kapp.vars.tiller_namespace }}
+          - apply
+          - -f={{ .kapp.vars.templated_path }}
+        env_vars:
+          env_vars:
+            KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+      - name: install tiller
+        command: "{{ .kapp.vars.helm }}"
+        args:
+          - --kube-context={{ .kapp.vars.kube_context }}
+          - --service-account={{ .kapp.vars.service_account }}
+          - --tiller-namespace={{ .kapp.vars.tiller_namespace }}
+          - init
+          - --wait
+          - --upgrade
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
