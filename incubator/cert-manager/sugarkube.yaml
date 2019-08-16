@@ -3,8 +3,8 @@
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
 
 # Env vars to pass to this kapp. Values can come from variables.
-env_vars:
-  TEMPLATED_PATH: "{{ index .kapp.templates 0 }}"
+vars:
+  templated_path: "{{ index .kapp.templates 0 }}"
 
 templates:
   - source: k8s/namespace.tpl.yaml
@@ -20,3 +20,77 @@ outputs:
   - format: yaml
     id: clusterIssuer
     path: templates/clusterissuer.yaml
+
+# this uses the helm binary but doesn't use the default run steps
+run_units:
+  helm:
+    working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.id }}"       # directory to use as the working directory
+    plan_install:
+      - name: helm-lint
+        command: "{{ .kapp.vars.helm }}"
+        args:
+          - lint
+          - --kube-context={{ .kapp.vars.kube_context }}
+          - --namespace={{ .kapp.vars.namespace }}
+          - .
+          - "{{ .kapp.vars.helm_params }}"          # this nested list will be flattened and appended to the main args list. Empty lists will be filtered out.
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+    apply_install:
+      - name: install CRDs
+        command: "{{ .kapp.vars.kubectl }}"
+        args:
+          - --context={{ .kapp.vars.kube_context }}
+          - apply
+          - -f=./k8s/00-crds.yaml
+        env_vars:
+          env_vars:
+            KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+      - name: create namespace
+        command: "{{ .kapp.vars.kubectl }}"
+        args:
+          - --context={{ .kapp.vars.kube_context }}
+          - apply
+          - -f={{ .kapp.vars.templated_path }}
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+      - name: helm-install
+        command: "{{ .kapp.vars.helm }}"
+        args:
+          - upgrade
+          - --kube-context={{ .kapp.vars.kube_context }}
+          - --tiller-namespace={{ .kapp.vars.tiller_namespace }}
+          - --wait
+          - --install
+          - --recreate-pods
+          - --timeout=600
+          - --namespace={{ .kapp.vars.namespace }}
+          - "{{ .kapp.vars.release }}"
+          - .
+          - "{{ .kapp.vars.helm_params }}"
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+        merge_priority: 30         # install helm charts *after* running terraform if terraform is used. By default
+        # terraform output will have been generated and loaded.
+    plan_delete:
+    apply_delete:
+      - name: helm-delete
+        command: "{{ .kapp.vars.helm }}"
+        args:
+          - delete
+          - --kube-context={{ .kapp.vars.kube_context }}
+          - --tiller-namespace={{ .kapp.vars.tiller_namespace }}
+          - --purge
+          - "{{ .kapp.vars.release }}"
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+      - name: delete namespace
+        command: "{{ .kapp.vars.kubectl }}"
+        args:
+          - --context={{ .kapp.vars.kube_context }}
+          - delete
+          - --now
+          - namespace
+          - "{{ .kapp.vars.namespace }}"
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
