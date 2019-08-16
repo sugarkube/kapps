@@ -51,3 +51,33 @@ run_units:
           - --upgrade
         env_vars:
           KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+    plan_delete:
+    apply_delete:
+      - name: uninstall tiller
+        command: "{{ .kapp.vars.helm }}"
+        args:
+          - --kube-context={{ .kapp.vars.kube_context }}
+          - --tiller-namespace={{ .kapp.vars.tiller_namespace }}
+          - reset
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+      - name: delete service account role binding
+        command: "{{ .kapp.vars.kubectl }}"
+        args:
+          - --context={{ .kapp.vars.kube_context }}
+          - --namespace={{ .kapp.vars.tiller_namespace }}
+          - delete
+          - "{{ .kapp.vars.role_binding }}"
+          - "{{ .kapp.vars.service_account }}"
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+      - name: delete service account
+        command: "{{ .kapp.vars.kubectl }}"
+        args:
+          - --context={{ .kapp.vars.kube_context }}
+          - --namespace={{ .kapp.vars.tiller_namespace }}
+          - delete
+          - ServiceAccount
+          - "{{ .kapp.vars.service_account }}"
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
