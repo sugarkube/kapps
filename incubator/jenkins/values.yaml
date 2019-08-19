@@ -4,3 +4,11 @@ jenkins:
 
   networkPolicy:
     enabled: true
+
+  prometheus:
+    operator:
+      namespace: prometheus-operator
+      alertmanager: alertmanager
+
+serviceAccount:
+  create: true

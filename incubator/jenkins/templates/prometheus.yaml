@@ -7,9 +7,10 @@ metadata:
 spec:
   alerting:
     alertmanagers:
-    - name: prometheus-operator-alertmanager
-      namespace: prometheus-operator
+    - name: {{ .Values.jenkins.prometheus.operator.namespace }}-{{ .Values.jenkins.prometheus.operator.alertmanager }}
+      namespace: {{ .Values.jenkins.prometheus.operator.namespace }}
       port: web
+  serviceAccountName: {{ include "jenkins.serviceAccountName" . }}
   replicas: 1
   resources:
     requests:
