@@ -1,0 +1,22 @@
+{{ if .Values.jenkins.master.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: {{ template "jenkins.fullname" . }}
+  namespace: {{ template "jenkins.namespace" . }}
+spec:
+  alerting:
+    alertmanagers:
+    - name: prometheus-operator-alertmanager
+      namespace: prometheus-operator
+      port: web
+  replicas: 1
+  resources:
+    requests:
+      memory: 400Mi
+  serviceMonitorSelector:
+    matchLabels:
+      "app.kubernetes.io/name": '{{ template "jenkins.name" .}}'
+      "app.kubernetes.io/instance": "{{ .Release.Name }}"
+      "app.kubernetes.io/component": "{{ .Values.jenkins.master.componentName }}"
+{{ end }}
