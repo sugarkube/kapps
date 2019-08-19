@@ -3,6 +3,7 @@
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
 vars:
   prometheusHostname: prometheus
+  grafanaHostname: grafana
 
 requires:
   - helm
