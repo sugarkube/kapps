@@ -46,6 +46,7 @@ run_units:
         env_vars:
           env_vars:
             KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+        merge_priority: 20
       - name: create namespace
         command: "{{ .kapp.vars.kubectl }}"
         args:
@@ -54,6 +55,7 @@ run_units:
           - -f={{ .kapp.vars.templated_path }}
         env_vars:
           KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+        merge_priority: 25
       - name: helm-install
         command: "{{ .kapp.vars.helm }}"
         args:
