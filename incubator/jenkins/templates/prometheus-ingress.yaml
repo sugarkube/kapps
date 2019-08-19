@@ -12,7 +12,7 @@ metadata:
   namespace: {{ template "jenkins.namespace" . }}
 spec:
   rules:
-  - host: {{ template "jenkins.fullname" . }}-prometheus.localhost
+  - host: {{ .Values.jenkins.master.prometheus.hostName }}
     http:
       paths:
       - backend:
