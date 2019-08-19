@@ -8,6 +8,9 @@ jenkins:
             - {{ .kapp.vars.release }}.{{ .cluster_name }}
           secretName: {{ .kapp.vars.release }}-cert
 
+    prometheus:
+      enabled: {{ .kapp.vars.prometheusEnabled }}
+
 cert:
   kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
   name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}
