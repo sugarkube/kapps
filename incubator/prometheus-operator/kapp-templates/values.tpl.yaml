@@ -19,6 +19,16 @@ prometheus-operator:
             - {{ .kapp.vars.grafanaHostname }}.{{ .cluster_name }}
           secretName: {{ .kapp.vars.release }}-cert
 
+  alertmanager:
+    ingress:
+      enabled: true
+      hosts:
+      - {{ .kapp.vars.alertManagerHostname }}.{{ .cluster_name }}
+      tls:
+        - hosts:
+            - {{ .kapp.vars.alertManagerHostname }}.{{ .cluster_name }}
+          secretName: {{ .kapp.vars.release }}-cert
+
 cert:
   kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
   name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}
