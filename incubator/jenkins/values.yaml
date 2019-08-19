@@ -1,6 +1,8 @@
 jenkins:
   master:
     serviceType: NodePort
+    prometheus:
+      enabled: true
 
   networkPolicy:
     enabled: true

@@ -3,7 +3,6 @@
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
 requires:
   - helm
-  - terraform
 
 templates:
   - source: kapp-templates/values.tpl.yaml
