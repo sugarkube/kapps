@@ -5,12 +5,16 @@ jenkins:
       hostName: {{ .kapp.vars.release }}.{{ .cluster_name }}
       tls:
         - hosts:
-            - {{ .kapp.vars.release }}.{{ .cluster_name }}
+          - {{ .kapp.vars.release }}.{{ .cluster_name }}
           secretName: {{ .kapp.vars.release }}-cert
 
     prometheus:
       enabled: {{ .kapp.vars.prometheusEnabled }}
-
+      hostName: {{ .kapp.vars.release }}-prometheus.{{ .cluster_name }}
+      tls:
+        - hosts:
+          - {{ .kapp.vars.release }}-prometheus.{{ .cluster_name }}
+          secretName: {{ .kapp.vars.release }}-prometheus-cert
 cert:
   kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
   name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}

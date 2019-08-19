@@ -1,0 +1,31 @@
+{{ if .Values.jenkins.master.prometheus.enabled }}
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: {{ template "jenkins.name" . }}-prometheus-cert
+  labels:
+    "app.kubernetes.io/name": '{{ template "jenkins.name" .}}'
+    "helm.sh/chart": "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    "app.kubernetes.io/managed-by": "{{ .Release.Service }}"
+    "app.kubernetes.io/instance": "{{ .Release.Name }}"
+    "app.kubernetes.io/component": "prometheus"
+spec:
+  secretName: {{ template "jenkins.name" . }}-prometheus-cert
+  issuerRef:
+    name: {{ .Values.cert.name }}
+    kind: {{ .Values.cert.kind }}
+  commonName: {{ template "jenkins.name" . }}
+  dnsNames:
+  - {{ template "jenkins.name" . }}-prometheus
+  - {{ template "jenkins.name" . }}-prometheus.{{ .Release.Namespace }}
+  - {{ template "jenkins.name" . }}-prometheus.{{ .Release.Namespace }}.svc
+  - {{ template "jenkins.name" . }}-prometheus.{{ .Release.Namespace }}.svc.cluster.local
+  - {{ template "jenkins.name" . }}-prometheus.localhost
+{{- if .Values.jenkins.master.prometheus.tls }}
+  {{- range .Values.jenkins.master.prometheus.tls }}
+    {{- range .hosts }}
+  - {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{ end }}
