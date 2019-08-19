@@ -1,6 +1,8 @@
 jenkins:
   master:
     serviceType: NodePort
+    installPlugins:
+      - prometheus:2.0.4
 
   networkPolicy:
     enabled: true
