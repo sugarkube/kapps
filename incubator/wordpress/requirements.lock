@@ -1,6 +1,6 @@
 dependencies:
 - name: wordpress
   repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 5.7.1
-digest: sha256:508f85ae9caf26328368f60231feac149f3fc665eb7391efaf7288f80d106811
-generated: 2019-04-07T09:36:31.036923101+01:00
+  version: 7.1.0
+digest: sha256:c0642c20a0cdc5c7068f04b2d2a23e5a8d0d9cdc8d6b33a0fb4fbe24de1baecf
+generated: 2019-08-20T05:55:55.971684+01:00
