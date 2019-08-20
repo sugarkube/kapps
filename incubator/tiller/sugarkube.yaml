@@ -38,8 +38,7 @@ run_units:
           - apply
           - -f={{ .kapp.vars.templated_path }}
         env_vars:
-          env_vars:
-            KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
       - name: install tiller
         command: "{{ .kapp.vars.helm }}"
         args:
