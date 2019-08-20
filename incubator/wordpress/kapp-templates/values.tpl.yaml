@@ -1,13 +1,14 @@
 wordpress:
   ingress:
     enabled: true
+    annotations:
+      # use the ingress-shim annotation instead of an explicitly defined certificate
+      "certmanager.k8s.io/cluster-issuer": {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}
     hosts:
       - name: {{ .kapp.vars.hostname }}
     tls:
       - hosts:
           - {{ .kapp.vars.hostname }}
-        secretName: {{ .kapp.vars.release | default .kapp.id }}-tls
+        secretName: {{ .kapp.vars.release }}-tls
 
-cert:
-  kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
-  name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}
+nameOverride: {{ .kapp.vars.release }}
