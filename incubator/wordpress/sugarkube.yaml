@@ -4,11 +4,32 @@
 
 vars:
   hostname: wordpress.localhost
+  main_kapp_dir: wordpress
 
 templates:
   - source: kapp-templates/values.tpl.yaml
     dest: _generated_values.yaml
 
 requires:
-  - helm
+  - helm          # these first 2 run units are defined in the main sugarkube-conf.yaml file.
   - terraform
+  - fixtures      # this corresponds to the run unit defined below
+
+# This example shows how to run an extra script after installing a kapp. Because of the 'condition' it'll only be
+# run when installing the kapp using the 'local' provider.
+run_units:
+  fixtures:
+    working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}"       # directory to use as the working directory
+    apply_install:
+      - name: install fixtures
+        command: ./install-fixtures.sh
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+          KUBE_CONTEXT: "{{ .kapp.vars.kube_context }}"
+          NAMESPACE: "{{ .kapp.vars.namespace }}"
+          KUBECTL: kubectl
+          KAPP_ROOT: "{{ .kapp.cacheRoot }}"
+          RELEASE: "{{ .kapp.id }}"
+          PROVIDER: "{{ .stack.provider }}"
+        conditions:
+          - "{{ eq .stack.provider \"local\" }}"        # only run when using the local provider

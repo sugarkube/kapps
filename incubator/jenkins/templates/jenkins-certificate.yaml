@@ -3,10 +3,11 @@ kind: Certificate
 metadata:
   name: {{ template "jenkins.name" . }}-cert
   labels:
-    app: {{ template "jenkins.name" . }}
-    chart: {{ template "jenkins.chart" . }}
-    release: {{ .Release.Name | quote }}
-    heritage: {{ .Release.Service | quote }}
+    "app.kubernetes.io/name": '{{ template "jenkins.name" .}}'
+    "helm.sh/chart": "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    "app.kubernetes.io/managed-by": "{{ .Release.Service }}"
+    "app.kubernetes.io/instance": "{{ .Release.Name }}"
+    "app.kubernetes.io/component": "{{ .Values.jenkins.master.componentName }}"
 spec:
   secretName: {{ template "jenkins.name" . }}-cert
   issuerRef:

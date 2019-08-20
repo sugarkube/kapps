@@ -1,9 +1,11 @@
 # This file is a golang template that supports sprig (https://masterminds.github.io/sprig/)
 # text functions.  Variable values come from the final set of variables
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
+vars:
+  prometheusEnabled: true     # using a variable here allows prometheus to be easily (dis)abled for different stacks
+
 requires:
   - helm
-  - terraform
 
 templates:
   - source: kapp-templates/values.tpl.yaml

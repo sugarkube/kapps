@@ -1,5 +1,5 @@
 # Standard Helm requirements.yaml file
 dependencies:
 - name: wordpress
-  version: "5.7.1"
+  version: "7.1.0"
   repository: "@stable"

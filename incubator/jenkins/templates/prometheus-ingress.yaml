@@ -1,0 +1,26 @@
+{{ if .Values.jenkins.master.prometheus.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  labels:
+    "app.kubernetes.io/name": '{{ template "jenkins.name" .}}'
+    "helm.sh/chart": "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    "app.kubernetes.io/managed-by": "{{ .Release.Service }}"
+    "app.kubernetes.io/instance": "{{ .Release.Name }}"
+    "app.kubernetes.io/component": "{{ .Values.jenkins.master.componentName }}"
+  name: {{ template "jenkins.fullname" . }}-prometheus
+  namespace: {{ template "jenkins.namespace" . }}
+spec:
+  rules:
+  - host: {{ .Values.jenkins.master.prometheus.hostName }}
+    http:
+      paths:
+      - backend:
+          serviceName: prometheus-operated
+          servicePort: 9090
+        path: /
+  {{- if .Values.jenkins.master.prometheus.tls }}
+  tls:
+{{ toYaml .Values.jenkins.master.prometheus.tls | indent 4 }}
+{{- end -}}
+{{ end }}

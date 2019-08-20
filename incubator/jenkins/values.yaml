@@ -1,6 +1,16 @@
 jenkins:
   master:
     serviceType: NodePort
+    installPlugins:
+      - prometheus        # unfortunately the chart fails if we try to pin to a specific version :-(
 
   networkPolicy:
     enabled: true
+
+  prometheus:
+    operator:
+      namespace: prometheus-operator
+      alertmanager: alertmanager
+
+serviceAccount:
+  create: true

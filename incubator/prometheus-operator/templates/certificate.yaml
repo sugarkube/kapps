@@ -25,3 +25,17 @@ spec:
     {{- end }}
   {{- end }}
 {{- end }}
+{{- if index .Values "prometheus-operator" "grafana" "ingress" "tls" }}
+  {{- range index .Values "prometheus-operator" "grafana" "ingress" "tls" }}
+    {{- range .hosts }}
+  - {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- if index .Values "prometheus-operator" "alertmanager" "ingress" "tls" }}
+  {{- range index .Values "prometheus-operator" "alertmanager" "ingress" "tls" }}
+    {{- range .hosts }}
+  - {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end }}
