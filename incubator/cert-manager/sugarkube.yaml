@@ -44,8 +44,7 @@ run_units:
           - apply
           - -f=./k8s/00-crds.yaml
         env_vars:
-          env_vars:
-            KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
         merge_priority: 20
       - name: create namespace
         command: "{{ .kapp.vars.kubectl }}"
