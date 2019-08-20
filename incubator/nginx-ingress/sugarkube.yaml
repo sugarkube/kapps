@@ -8,3 +8,7 @@ vars:
 
 requires:
   - helm
+
+templates:
+  - source: kapp-templates/values.tpl.yaml
+    dest: _generated_values.yaml
