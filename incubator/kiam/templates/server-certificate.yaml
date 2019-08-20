@@ -1,0 +1,20 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: {{ template "kiam.fullname" . }}-agent
+  labels:
+    app: {{ template "kiam.name" . }}
+    chart: {{ template "kiam.chart" . }}
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+spec:
+  secretName: {{ template "kiam.fullname" . }}-agent
+  issuerRef:
+    name: {{ .Values.cert.name }}
+    kind: {{ .Values.cert.kind }}
+  commonName: {{ template "kiam.name" . }}
+  dnsNames:
+  - {{ template "kiam.name" . }}
+  - {{ template "kiam.name" . }}.{{ .Release.Namespace }}
+  - {{ template "kiam.name" . }}.{{ .Release.Namespace }}.svc
+  - {{ template "kiam.name" . }}.{{ .Release.Namespace }}.svc.cluster.local
