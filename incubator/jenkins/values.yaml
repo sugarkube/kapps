@@ -2,7 +2,7 @@ jenkins:
   master:
     serviceType: NodePort
     installPlugins:
-      - prometheus:2.0.4
+      - prometheus        # unfortunately the chart fails if we try to pin to a specific version :-(
 
   networkPolicy:
     enabled: true
