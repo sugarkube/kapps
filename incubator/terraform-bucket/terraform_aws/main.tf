@@ -31,3 +31,26 @@ resource "aws_s3_bucket_public_access_block" "block" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
+
+resource "aws_s3_bucket_policy" "deny_unencrypted_uploads" {
+  bucket = "${aws_s3_bucket.bucket.id}"
+  policy = <<POLICY
+{
+   "Version":"2012-10-17",
+   "Id":"PutObjPolicy",
+   "Statement":[{
+         "Sid":"DenyUnEncryptedObjectUploads",
+         "Effect":"Deny",
+         "Principal":"*",
+         "Action":"s3:PutObject",
+         "Resource":"${aws_s3_bucket.bucket.arn}/*",
+         "Condition":{
+            "StringNotEquals":{
+               "s3:x-amz-server-side-encryption":"aws:kms"
+            }
+         }
+      }
+   ]
+}
+POLICY
+}
