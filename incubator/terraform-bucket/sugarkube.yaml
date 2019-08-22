@@ -1,2 +1,9 @@
+vars:
+  tf_params: -var bucket_name={{ .terraform.state.bucket }} -var cluster={{ .stack.cluster }}
+
 requires:
   - terraform
+
+output:
+  - name: terraform
+    value: "{{ .kapp.vars.tf_output_path }}"
