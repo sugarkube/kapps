@@ -32,51 +32,51 @@ run_units:
     apply_install:
       - name: install RBAC
         command: "{{ .kapp.vars.kubectl }}"
-        args:
-          - --context={{ .kapp.vars.kube_context }}
-          - --namespace={{ .kapp.vars.tiller_namespace }}
-          - apply
-          - -f={{ .kapp.vars.templated_path }}
+        args: |
+          --context={{ .kapp.vars.kube_context }}
+          --namespace={{ .kapp.vars.tiller_namespace }}
+          apply
+          -f={{ .kapp.vars.templated_path }}
         env_vars:
           KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
       - name: install tiller
         command: "{{ .kapp.vars.helm }}"
-        args:
-          - --kube-context={{ .kapp.vars.kube_context }}
-          - --service-account={{ .kapp.vars.service_account }}
-          - --tiller-namespace={{ .kapp.vars.tiller_namespace }}
-          - init
-          - --wait
-          - --upgrade
+        args: |
+          --kube-context={{ .kapp.vars.kube_context }}
+          --service-account={{ .kapp.vars.service_account }}
+          --tiller-namespace={{ .kapp.vars.tiller_namespace }}
+          init
+          --wait
+          --upgrade
         env_vars:
           KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
     plan_delete:
     apply_delete:
       - name: uninstall tiller
         command: "{{ .kapp.vars.helm }}"
-        args:
-          - --kube-context={{ .kapp.vars.kube_context }}
-          - --tiller-namespace={{ .kapp.vars.tiller_namespace }}
-          - reset
+        args: |
+          --kube-context={{ .kapp.vars.kube_context }}
+          --tiller-namespace={{ .kapp.vars.tiller_namespace }}
+          reset
         env_vars:
           KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
       - name: delete service account role binding
         command: "{{ .kapp.vars.kubectl }}"
-        args:
-          - --context={{ .kapp.vars.kube_context }}
-          - --namespace={{ .kapp.vars.tiller_namespace }}
-          - delete
-          - "{{ .kapp.vars.role_binding }}"
-          - "{{ .kapp.vars.service_account }}"
+        args: |
+          --context={{ .kapp.vars.kube_context }}
+          --namespace={{ .kapp.vars.tiller_namespace }}
+          delete
+          {{ .kapp.vars.role_binding }}
+          {{ .kapp.vars.service_account }}
         env_vars:
           KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
       - name: delete service account
         command: "{{ .kapp.vars.kubectl }}"
         args:
-          - --context={{ .kapp.vars.kube_context }}
-          - --namespace={{ .kapp.vars.tiller_namespace }}
-          - delete
-          - ServiceAccount
-          - "{{ .kapp.vars.service_account }}"
+          --context={{ .kapp.vars.kube_context }}
+          --namespace={{ .kapp.vars.tiller_namespace }}
+          delete
+          ServiceAccount
+          {{ .kapp.vars.service_account }}
         env_vars:
           KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
