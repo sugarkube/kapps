@@ -4,6 +4,8 @@
 # * Creates a placeholder VPC and private hosted zone or
 # * Associates a VPC with the hosted zone and deletes the placeholder
 #
+# Note: This assumes that a VPC may exist with the same name as the hosted zone
+#
 
 import argparse
 import subprocess
@@ -19,14 +21,13 @@ AWS="aws"       # path to the AWS CLI binary
 def main():
     parser = argparse.ArgumentParser(description='Creates/updates hosted zones for kops.')
     parser.add_argument(dest='hosted_zone_name', help='Hosted zone to create/update')
-    parser.add_argument(dest='vpc_name', help='Name of the VPC to associate')
     parser.add_argument(dest='vpc_region', help='Region to create the VPC in')
 
     args = parser.parse_args()
-    return run(args.hosted_zone_name, args.vpc_name, args.vpc_region)
+    return run(args.hosted_zone_name, args.vpc_region)
 
 
-def run(hosted_zone_name, vpc_name, vpc_region):
+def run(hosted_zone_name, vpc_region):
     if not hosted_zone_name.endswith('.'):
         hosted_zone_name += '.'
 
@@ -40,6 +41,97 @@ def run(hosted_zone_name, vpc_name, vpc_region):
         hosted_zone_id = _create_hosted_zone(hosted_zone_name=hosted_zone_name,
                                              placeholder_vpc_name=placeholder_vpc_name,
                                              vpc_region=vpc_region)
+    
+    # see if the main (non-placeholder) vpc exists
+    vpc_name = hosted_zone_name.rstrip('.')
+    vpc_id = _get_vpc_by_name(vpc_name)
+    
+    if not vpc_id:
+        logging.info("No main VPC exists called '%s'. Nothing else to do." % vpc_name)
+    
+    # if it does exist, we need to associate it with the hosted zone if it's not already,
+    # and delete the placeholder if it exists
+    if _is_vpc_associated_with_hosted_zone(vpc_id=vpc_id, hosted_zone_id=hosted_zone_id):
+        logging.info("Hosted zone '%s' is already associated with VPC '%s' (ID='%s')" % 
+                     (hosted_zone_id, vpc_name, vpc_id))
+    else:
+        # associate the vpc with the hosted zone
+        _associate_vpc_with_hosted_zone(vpc_id=vpc_id, 
+                                        hosted_zone_id=hosted_zone_id, 
+                                        vpc_region=vpc_region)
+    
+    placeholder_vpc_id = _get_vpc_by_name(placeholder_vpc_name)
+    if placeholder_vpc_id:
+        # delete the placeholder VPC
+        if _is_vpc_associated_with_hosted_zone(placeholder_vpc_id, hosted_zone_name):
+            _dissociate_vpc_from_hosted_zone(vpc_id=vpc_id,
+                                             hosted_zone_id=hosted_zone_id,
+                                             vpc_region=vpc_region)
+        
+        logging.info("Deleting placeholder VPC '%s'" % placeholder_vpc_id)
+        _delete_vpc(placeholder_vpc_id)
+    else:
+        logging.info("Couldn't find a placeholder VPC called '%s'. Assume it's already been deleted." % placeholder_vpc_name)
+        
+
+def _dissociate_vpc_from_hosted_zone(vpc_id, hosted_zone_id, vpc_region):
+    """
+    Dissociates a VPC from a hosted zone
+    :param vpc_id: 
+    :param hosted_zone_id: 
+    :param vpc_region: 
+    """
+    logging.info("Dissociating VPC '%s' with hosted zone '%s'" % (vpc_id, hosted_zone_id))
+    result = subprocess.run(args=[AWS, '--output', 'text', 'route53', 'dissociate-vpc-from-hosted-zone',
+                                  '--hosted-zone-id', hosted_zone_id, 
+                                  '--vpc', 'VPCRegion=%s,VPCId=%s' % (vpc_region, vpc_id)],
+                            capture_output=True)
+    logging.debug('result=%s' % result)
+
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to dissociate VPC '%s' from hosted zone '%s': %s" % (
+            vpc_id, hosted_zone_id, result))
+        
+
+def _associate_vpc_with_hosted_zone(vpc_id, hosted_zone_id, vpc_region):
+    """
+    Associate a VPC with a hosted zone
+    :param vpc_id: 
+    :param hosted_zone_id: 
+    :param vpc_region: 
+    """
+    logging.info("Associating VPC '%s' with hosted zone '%s'" % (vpc_id, hosted_zone_id))
+    result = subprocess.run(args=[AWS, '--output', 'text', 'route53', 'associate-vpc-with-hosted-zone',
+                                  '--hosted-zone-id', hosted_zone_id, 
+                                  '--vpc', 'VPCRegion=%s,VPCId=%s' % (vpc_region, vpc_id)],
+                            capture_output=True)
+    logging.debug('result=%s' % result)
+
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to associate VPC '%s' with hosted zone '%s': %s" % (
+            vpc_id, hosted_zone_id, result))
+
+
+def _is_vpc_associated_with_hosted_zone(vpc_id, hosted_zone_id):
+    """
+    Checks whether a VPC is associated with a hosted zone
+    :param vpc_id: 
+    :param hosted_zone_id: 
+    :return: boolean
+    """
+    logging.info("Checking whether VPC '%s' is associated with hosted zone '%s'" % (vpc_id, hosted_zone_id))
+    result = subprocess.run(args=[AWS, '--output', 'text', 'route53', 'get-hosted-zone',
+                                  '--id', hosted_zone_id, 
+                                  '--query', 'VPCs[?VPCId == `%s`].VpcId | [0]' % vpc_id],
+                            capture_output=True)
+
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to check whether VPC '%s' is associated with hosted zone '%s': %s" % (
+            vpc_id, hosted_zone_id, result))
+    
+    logging.debug('result=%s' % result)
+    result = result.stdout.decode("utf-8").strip()
+    return result == vpc_id
 
 
 def _get_vpc_by_name(vpc_name):
@@ -65,6 +157,19 @@ def _get_vpc_by_name(vpc_name):
     logging.debug("Returning result '%s'" % result)
 
     return result
+
+
+def _delete_vpc(vpc_id):
+    """
+    Deletes a VPC by name
+    :param vpc_id: 
+    """
+    logging.info("Deleting VPC '%s'" % vpc_id)
+    result = subprocess.run(args=[AWS, '--output', 'text', 'ec2', 'delete-vpc',
+                                  '--vpc-id', vpc_id],
+                            capture_output=True)
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to delete VPC '%s': %s" % (vpc_id, result))
 
 
 def _create_vpc(vpc_name):
