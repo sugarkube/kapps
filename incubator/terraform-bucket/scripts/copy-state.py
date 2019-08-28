@@ -83,7 +83,29 @@ def install(backend_path):
 
 
 def delete(backend_path):
-    pass
+    tf_dir = os.path.dirname(backend_path)
+    print("Terraform directory: %s" % tf_dir)
+
+    bucket, path = _get_remote_backend(backend_path)
+
+    # check whether the remote state file exists
+    state_file_s3_path = "s3://%s/%s" % (bucket, path)
+    result = subprocess.run([AWS, "s3", "ls", state_file_s3_path])
+    if result.returncode == 0:
+        print("Remote state file '%s' exists" % state_file_s3_path)
+        local_state_file = os.path.join(tf_dir, STATE_FILE)
+
+        result = subprocess.run([AWS, "s3", "mv", state_file_s3_path, local_state_file])
+        if result.returncode == 0:
+            print("Remote state file '%s' moved to '%s'" % (state_file_s3_path, local_state_file))
+        else:
+            raise RuntimeError("Error moving moving remote state file '%s' to '%s'" % (state_file_s3_path,
+                                                                                       local_state_file))
+
+    backend_file = backend_path + ".tf"
+    if os.path.exists(backend_file):
+        print("Deleting local backend file")
+        os.unlink(backend_file)
 
 
 if __name__=="__main__":
