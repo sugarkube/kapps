@@ -1,9 +1,94 @@
-vars:
-  tf_params: -var bucket_name={{ .terraform.state.bucket }} -var cluster={{ .stack.cluster }}
-
 requires:
   - terraform
+  - aws
 
 output:
   - name: terraform
     value: "{{ .kapp.vars.tf_output_path }}"
+
+vars:
+  main_kapp_dir: "{{ .kapp.id }}"
+  region: "{{ .stack.region }}"
+  project: "{{ .project }}"
+  run_terraform: true    # none of these units will be run for a kapp if this is false because of the associated condition
+  terraform: terraform   # path to the terraform binary to run. This allows version pinning if you have multiple versions of terraform on your machine.
+  terraform_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/terraform_{{ .stack.provider }}"
+  tf_output_path: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/terraform_{{ .stack.provider }}/_generated_terraform_output.json"
+  tf_plan_path: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/terraform_{{ .stack.provider }}/_generated_plan.tfplan"
+  tf_params: -var bucket_name={{ .terraform.state.bucket }} -var cluster={{ .stack.cluster }}
+
+run_units:
+  terraform:
+    working_dir: "{{ .kapp.vars.terraform_dir }}"       # directory to use as the working directory
+    conditions:       # all must be true for any units to be run
+      - "{{ .kapp.vars.run_terraform }}"
+      - "{{ exists \"d\" .kapp.vars.terraform_dir }}"          # won't run these if there's no terraform_<provider> directory (e.g. for local providers)
+    plan_install:
+      - name: copy-state
+        command: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/scripts/copy-state.py"
+        args: install {{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/terraform_{{ .stack.provider }}/_generated_backend
+        print: verbose
+      - name: tf-init
+        command: "{{ .kapp.vars.terraform }}"
+        args: init
+        conditions:       # additional conditions for this specific step to be run. These must all be truthy for the command to be executed.
+          # only run if terraform hasn't already initialised (i.e. no .terraform directory exists)
+          - "{{ exists \"d\" \"{{ .kapp.vars.terraform_dir }}/.terraform\" | not }}"
+      - name: tf-format
+        command: "{{ .kapp.vars.terraform }}"
+        args: fmt
+      - name: tf-validate
+        command: "{{ .kapp.vars.terraform }}"
+        args: validate {{ .kapp.vars.tf_params }}      # entirely blank/empty args will be stripped out by sugarkube
+      - name: tf-plan
+        print: verbose                     # print the plan to the console
+        command: "{{ .kapp.vars.terraform }}"
+        args: |
+          plan
+            -refresh=true
+            -out
+            {{ .kapp.vars.tf_plan_path }}
+            {{ .kapp.vars.tf_params }}
+    apply_install:
+      - name: tf-apply
+        print: verbose
+        command: "{{ .kapp.vars.terraform }}"
+        args: apply {{ .kapp.vars.tf_plan_path }}
+        merge_priority: 10         # apply terraform *before* installing a helm chart
+      - call: output      # call the whole 'output' unit
+        merge_priority: 15         # apply terraform *before* installing a helm chart
+      - call: plan_install/copy-state
+    plan_delete:
+      - call: plan_install/tf-init       # call the tf-init step defined under `plan_install`
+        merge_priority: 25  # this needs to be merged after helm has run
+      - name: tf-destroy
+        print: true
+        expected_exit_code: 1                           # terraform will exit with a code of '1', so only throw an error if it returns another error code
+        command: "{{ .kapp.vars.terraform }}"           # command not auto-approved
+        args: destroy {{ .kapp.vars.tf_params }}
+    apply_delete:
+      - name: copy-state
+        command: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/scripts/copy-state.py"
+        args: delete {{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/terraform_{{ .stack.provider }}/_generated_backend
+        print: verbose
+        merge_priority: 5
+      - call: plan_install/tf-init       # call the tf-init step defined under `plan_install`
+        merge_priority: 25  # this needs to be merged after helm has run
+      - name: tf-destroy
+        command: "{{ .kapp.vars.terraform }}"
+        args: destroy -auto-approve {{ .kapp.vars.tf_params }}      # command auto-approved
+        merge_priority: 30         # delete terraform *after* deleting a helm chart
+    output:         # todo - we'll probably need the ability to add conditions to entire run units, e.g. gt 0 len(.kapp.output)
+      - call: plan_install/tf-init       # call the tf-init step defined under `plan_install`
+      - name: tf-refresh
+        command: "{{ .kapp.vars.terraform }}"
+        args: refresh {{ .kapp.vars.tf_params }}
+        conditions:
+          # this is evaluated before any steps are executed so it'll be false even if the tf-init step has just
+          # created this directory
+          - "{{ exists \"d\" \"{{ .kapp.vars.terraform_dir }}/.terraform\" | not }}"
+      - name: tf-output
+        command: "{{ .kapp.vars.terraform }}"
+        args: output -json
+        stdout: "{{ .kapp.vars.tf_output_path }}"       # save stdout to this path
+        load_outputs: true      # instructs sugarkube to load and parse any defined outputs making them available for subsequent run steps

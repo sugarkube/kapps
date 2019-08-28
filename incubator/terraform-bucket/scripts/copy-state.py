@@ -104,7 +104,7 @@ def delete(backend_path):
 
     backend_file = backend_path + ".tf"
     if os.path.exists(backend_file):
-        print("Deleting local backend file")
+        print("Deleting local backend file '%s'" % backend_file)
         os.unlink(backend_file)
 
 
