@@ -15,19 +15,46 @@ import time
 
 logging.basicConfig(level=logging.DEBUG)
 
+INSTALL="install"
+DELETE="delete"
 AWS="aws"       # path to the AWS CLI binary
 
 
 def main():
     parser = argparse.ArgumentParser(description='Creates/updates hosted zones for kops.')
-    parser.add_argument(dest='hosted_zone_name', help='Hosted zone to create/update')
-    parser.add_argument(dest='vpc_region', help='Region to create the VPC in')
+    parser.add_argument(dest='mode', choices=[INSTALL, DELETE], help='Mode to run in')
+    parser.add_argument(dest='hosted_zone_name', help='Hosted zone to create/update (a domain name)')
+    parser.add_argument(dest='--vpc-region', help='Region to create the VPC in (when running in install mode)')
 
     args = parser.parse_args()
-    return run(args.hosted_zone_name, args.vpc_region)
+    return run(mode=args.mode, hosted_zone_name=args.hosted_zone_name, vpc_region=args.vpc_region)
 
 
-def run(hosted_zone_name, vpc_region):
+def run(mode, hosted_zone_name, vpc_region):
+    if mode == INSTALL:
+        return install(hosted_zone_name=hosted_zone_name)
+    elif mode == DELETE:
+        return delete(hosted_zone_name=hosted_zone_name, vpc_region=vpc_region)
+
+
+def delete(hosted_zone_name):
+    """
+    Deletes a hosted zone (used when deleting the kapp)
+    :param hosted_zone_name:
+    """
+    if not hosted_zone_name.endswith('.'):
+        hosted_zone_name += '.'
+
+    hosted_zone_id = _get_hosted_zone_id(hosted_zone_name)
+    logging.info("Hosted zone ID is: '%s'" % hosted_zone_id)
+
+
+def install(hosted_zone_name, vpc_region):
+    """
+    Creates/updates a hosted zone and its associated VPC and creates/deletes a placeholder VPC accordingly
+    :param hosted_zone_name:
+    :param vpc_region:
+    """
     if not hosted_zone_name.endswith('.'):
         hosted_zone_name += '.'
 
@@ -201,6 +228,20 @@ def _create_vpc(vpc_name):
     logging.info("VPC '%s' (ID=%s) created and tagged" % (vpc_name, vpc_id))
 
     return vpc_id
+
+
+def _delete_hosted_zone(hosted_zone_id):
+    """
+    Delete a hosted zone
+    :param hosted_zone_id:
+    """
+    logging.info("Deleting hosted zone '%s'" % hosted_zone_id)
+    result = subprocess.run(args=[AWS, '--output', 'text', 'route53', 'delete-hosted-zone',
+                                  '--id', hosted_zone_id],
+                            capture_output=True)
+
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to delete hosted zone '%s': %s" % (hosted_zone_id, result))
 
 
 def _create_hosted_zone(hosted_zone_name, placeholder_vpc_name, vpc_region):
