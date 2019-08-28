@@ -9,6 +9,7 @@ import argparse
 import subprocess
 import sys
 import logging
+import time
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -19,21 +20,26 @@ def main():
     parser = argparse.ArgumentParser(description='Creates/updates hosted zones for kops.')
     parser.add_argument(dest='hosted_zone_name', help='Hosted zone to create/update')
     parser.add_argument(dest='vpc_name', help='Name of the VPC to associate')
+    parser.add_argument(dest='vpc_region', help='Region to create the VPC in')
 
     args = parser.parse_args()
-    return run(args.hosted_zone_name, args.vpc_name)
+    return run(args.hosted_zone_name, args.vpc_name, args.vpc_region)
 
 
-def run(hosted_zone_name, vpc_name):
+def run(hosted_zone_name, vpc_name, vpc_region):
     if not hosted_zone_name.endswith('.'):
         hosted_zone_name += '.'
 
     hosted_zone_id = _get_hosted_zone_id(hosted_zone_name)
     logging.info("Hosted zone ID is: '%s'" % hosted_zone_id)
 
+    placeholder_vpc_name = "placeholder %s" % hosted_zone_name
+
     if not hosted_zone_id:
         logging.info("Hosted zone doesn't exist... Will create it.")
-        hosted_zone_id = _create_hosted_zone(hosted_zone_name)
+        hosted_zone_id = _create_hosted_zone(hosted_zone_name=hosted_zone_name,
+                                             placeholder_vpc_name=placeholder_vpc_name,
+                                             vpc_region=vpc_region)
 
 
 def _get_vpc_by_name(vpc_name):
@@ -48,6 +54,10 @@ def _get_vpc_by_name(vpc_name):
                                   '--query', 'Vpcs[*].VpcId | [0]'],
                             capture_output=True)
     logging.debug('result=%s' % result)
+
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to create VPC '%s': %s" % (vpc_name, result))
+
     result = result.stdout.decode("utf-8").strip()
     if result == 'None':
         result = None
@@ -57,12 +67,67 @@ def _get_vpc_by_name(vpc_name):
     return result
 
 
-def _create_hosted_zone(hosted_zone_name):
+def _create_vpc(vpc_name):
+    """
+    Creates a VPC and tags it with the given name
+    :param vpc_name:
+    :return:
+    """
+    logging.info("Creating a VPC called '%s'" % vpc_name)
+    result = subprocess.run(args=[AWS, '--output', 'text', 'ec2', 'create-vpc',
+                                  '--cidr-block', '10.0.0.0/28',        # this is a temporary placeholder so we can use anything
+                                  '--query', 'Vpc.VpcId'],
+                            capture_output=True)
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to create VPC '%s': %s" % (vpc_name, result))
+
+    vpc_id = result.stdout.decode("utf-8").strip()
+    if vpc_id == 'None':
+        vpc_id = None
+
+    logging.info("Tagging VPC '%s'" % vpc_name)
+    result = subprocess.run(args=[AWS, '--output', 'text', 'ec2', 'create-tags', '--resources', vpc_id,
+                                  '--tags', 'Key=Name,Value=%s' % vpc_name],
+                            capture_output=False)
+
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to tag VPC '%s': %s" % (vpc_name, result))
+
+    logging.info("VPC '%s' (ID=%s) created and tagged" % (vpc_name, vpc_id))
+
+    return vpc_id
+
+
+def _create_hosted_zone(hosted_zone_name, placeholder_vpc_name, vpc_region):
     """
     Creates a hosted zone and returns its ID
     :param hosted_zone_name:
+    :param placeholder_vpc_name: Name of the placeholder VPC to create if it doesn't already exist
+    :param vpc_name: Region to create the VPC in
     :return: The hosted zone ID
     """
+    placeholder_vpc_id = _get_vpc_by_name(placeholder_vpc_name)
+    if not placeholder_vpc_id:
+        placeholder_vpc_id = _create_vpc(placeholder_vpc_name)
+
+    logging.info("Creating private hosted zone '%s' for placeholder VPC %s" % (hosted_zone_name,
+                                                                               placeholder_vpc_id))
+    result = subprocess.run(args=[AWS, '--output', 'text', 'route53', 'create-hosted-zone',
+                                  '--caller-reference', time.time(),
+                                  '--vpc', "VPCRegion=%s,VPCId=%s" % (vpc_region, placeholder_vpc_id),
+                                  '--name', hosted_zone_name, '--hosted-zone-config', 'PrivateZone=true',
+                                  '--query', 'HostedZone.Id'],
+                            capture_output=True)
+
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to create hosted zone '%s': %s" % (hosted_zone_name, result))
+
+    logging.debug('result=%s' % result)
+    hosted_zone_id = result.stdout.decode("utf-8").strip()
+    if hosted_zone_id == 'None':
+        hosted_zone_id = None
+
+    return hosted_zone_id
 
 
 def _get_hosted_zone_id(hosted_zone_name):
@@ -75,6 +140,10 @@ def _get_hosted_zone_id(hosted_zone_name):
     result = subprocess.run(args=[AWS, '--output', 'text', 'route53', 'list-hosted-zones', '--query',
                              'HostedZones[?Name == `%s` && Config.PrivateZone == `true`].Id | [0]' % hosted_zone_name],
                             capture_output=True)
+
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to create VPC '%s': %s" % (hosted_zone_name, result))
+
     logging.debug('result=%s' % result)
     result = result.stdout.decode("utf-8").strip()
     if result == 'None':
