@@ -48,6 +48,14 @@ def delete(hosted_zone_name):
     hosted_zone_id = _get_hosted_zone_id(hosted_zone_name)
     logging.info("Hosted zone ID is: '%s'" % hosted_zone_id)
 
+    if hosted_zone_id:
+        _delete_hosted_zone(hosted_zone_id)
+
+    placeholder_vpc_name = "placeholder %s" % hosted_zone_name
+    vpc_id = _get_vpc_by_name(placeholder_vpc_name)
+    if vpc_id:
+        _delete_vpc(vpc_id)
+
 
 def install(hosted_zone_name, vpc_region):
     """
