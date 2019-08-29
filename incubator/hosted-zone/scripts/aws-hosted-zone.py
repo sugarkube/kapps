@@ -75,6 +75,7 @@ def install(hosted_zone_name, vpc_region):
     
     if not vpc_id:
         logging.info("No main VPC exists called '%s'. Nothing else to do." % vpc_name)
+        return
     
     # if it does exist, we need to associate it with the hosted zone if it's not already,
     # and delete the placeholder if it exists
@@ -212,6 +213,8 @@ def _create_vpc(vpc_name):
                             capture_output=True)
     if not result.returncode == 0:
         raise RuntimeError("Failed to create VPC '%s': %s" % (vpc_name, result))
+
+    logging.debug('result=%s' % result)
 
     vpc_id = result.stdout.decode("utf-8").strip()
     if vpc_id == 'None':
