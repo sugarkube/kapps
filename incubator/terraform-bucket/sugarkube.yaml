@@ -26,6 +26,8 @@ run_units:
     conditions:       # all must be true for any units to be run
       - "{{ .kapp.vars.run_terraform }}"
       - "{{ exists \"d\" .kapp.vars.terraform_dir }}"          # won't run these if there's no terraform_<provider> directory (e.g. for local providers)
+    env_vars:
+      AWS_DEFAULT_REGION: "{{ .stack.region }}"       # required because of https://github.com/hashicorp/terraform/issues/21408
     plan_install:
       - name: copy-state
         command: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/scripts/copy-state.py"
@@ -43,8 +45,6 @@ run_units:
       - name: tf-validate
         command: "{{ .kapp.vars.terraform }}"
         args: validate {{ .kapp.vars.tf_params }}      # entirely blank/empty args will be stripped out by sugarkube
-        env_vars:
-          AWS_DEFAULT_REGION: "{{ .stack.region }}"       # required because of https://github.com/hashicorp/terraform/issues/21408
       - name: tf-plan
         print: verbose                     # print the plan to the console
         command: "{{ .kapp.vars.terraform }}"
@@ -54,8 +54,6 @@ run_units:
             -out
             {{ .kapp.vars.tf_plan_path }}
             {{ .kapp.vars.tf_params }}
-        env_vars:
-          AWS_DEFAULT_REGION: "{{ .stack.region }}"       # required because of https://github.com/hashicorp/terraform/issues/21408
     apply_install:
       - name: tf-apply
         print: verbose

@@ -44,6 +44,9 @@ def run(mode, backend_path):
 
 def _get_remote_backend(backend_path):
     "Returns the remote bucket and state file path from a backend.tf file"
+    if not os.path.exists(backend_path):
+        raise FileNotFoundError("Backend path '%s' doesn't exist" % backend_path)
+
     with open(backend_path) as f:
         contents = f.read()
 
@@ -59,7 +62,13 @@ def install(backend_path):
     tf_dir = os.path.dirname(backend_path)
     logging.info("Terraform directory: %s" % tf_dir)
 
-    bucket, path = _get_remote_backend(backend_path)
+    try:
+        bucket, path = _get_remote_backend(backend_path)
+    except FileNotFoundError as e:
+        logging.error(e)
+        logging.info("This is nothing to worry about if the kapp is already installed and the backend "
+                     "has already been copied.")
+        return
 
     # check whether the state bucket exists
     result = subprocess.run([AWS, "s3", "ls", "s3://%s" % bucket])
