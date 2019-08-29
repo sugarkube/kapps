@@ -24,7 +24,7 @@ def main():
     parser = argparse.ArgumentParser(description='Creates/updates hosted zones for kops.')
     parser.add_argument(dest='mode', choices=[INSTALL, DELETE], help='Mode to run in')
     parser.add_argument(dest='hosted_zone_name', help='Hosted zone to create/update (a domain name)')
-    parser.add_argument(dest='--vpc-region', help='Region to create the VPC in (when running in install mode)')
+    parser.add_argument('--vpc-region', help='Region to create the VPC in (when running in install mode)')
 
     args = parser.parse_args()
     return run(mode=args.mode, hosted_zone_name=args.hosted_zone_name, vpc_region=args.vpc_region)
@@ -32,9 +32,9 @@ def main():
 
 def run(mode, hosted_zone_name, vpc_region):
     if mode == INSTALL:
-        return install(hosted_zone_name=hosted_zone_name)
+        return install(hosted_zone_name=hosted_zone_name, vpc_region=vpc_region)
     elif mode == DELETE:
-        return delete(hosted_zone_name=hosted_zone_name, vpc_region=vpc_region)
+        return delete(hosted_zone_name=hosted_zone_name)
 
 
 def delete(hosted_zone_name):
@@ -169,7 +169,7 @@ def _get_vpc_by_name(vpc_name):
     """
     logging.info("Searching for VPC '%s'" % vpc_name)
     result = subprocess.run(args=[AWS, '--output', 'text', 'ec2', 'describe-vpcs',
-                                  '--filters', 'Name=tag:Name,VAlues=%s' % vpc_name,
+                                  '--filters', 'Name=tag:Name,Values=%s' % vpc_name,
                                   '--query', 'Vpcs[*].VpcId | [0]'],
                             capture_output=True)
     logging.debug('result=%s' % result)
@@ -256,10 +256,10 @@ def _create_hosted_zone(hosted_zone_name, placeholder_vpc_name, vpc_region):
     if not placeholder_vpc_id:
         placeholder_vpc_id = _create_vpc(placeholder_vpc_name)
 
-    logging.info("Creating private hosted zone '%s' for placeholder VPC %s" % (hosted_zone_name,
-                                                                               placeholder_vpc_id))
+    logging.info("Creating private hosted zone '%s' for placeholder VPC %s in region %s" % (
+        hosted_zone_name, placeholder_vpc_id, vpc_region))
     result = subprocess.run(args=[AWS, '--output', 'text', 'route53', 'create-hosted-zone',
-                                  '--caller-reference', time.time(),
+                                  '--caller-reference', str(time.time()),
                                   '--vpc', "VPCRegion=%s,VPCId=%s" % (vpc_region, placeholder_vpc_id),
                                   '--name', hosted_zone_name, '--hosted-zone-config', 'PrivateZone=true',
                                   '--query', 'HostedZone.Id'],

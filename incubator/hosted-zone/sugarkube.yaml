@@ -1,2 +1,21 @@
 requires:
   - aws
+
+vars:
+  hosted_zone_script: "{{ .kapp.cacheRoot }}/hosted-zone/scripts/{{ .stack.provider }}-hosted-zone.py"
+
+run_units:
+  aws:
+    working_dir: "{{ .kapp.cacheRoot }}"       # directory to use as the working directory
+    conditions:       # all must be true for any units to be run
+      - "{{ exists \"f\" .kapp.vars.hosted_zone_script }}"          # won't run these if there's no script for the provider
+    apply_install:
+      - name: create-hosted-zone
+        print: verbose
+        command: "{{ .kapp.vars.hosted_zone_script }}"
+        args: install --vpc-region {{ .stack.region }} {{ .cluster_name }}
+    apply_delete:
+      - name: copy-state
+        print: verbose
+        command: "{{ .kapp.vars.hosted_zone_script }}"
+        args: delete {{ .cluster_name }}
