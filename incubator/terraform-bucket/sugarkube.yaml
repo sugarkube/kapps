@@ -6,6 +6,9 @@ output:
   - name: terraform
     value: "{{ .kapp.vars.tf_output_path }}"
 
+ignore_global_defaults: true        # this opts out of using the terraform stuff configured in sugarkube-conf.yaml.
+                                    # Without this we'd get a backend.tf file whether we wanted one or not.
+
 vars:
   main_kapp_dir: "{{ .kapp.id }}"
   region: "{{ .stack.region }}"
@@ -40,6 +43,8 @@ run_units:
       - name: tf-validate
         command: "{{ .kapp.vars.terraform }}"
         args: validate {{ .kapp.vars.tf_params }}      # entirely blank/empty args will be stripped out by sugarkube
+        env_vars:
+          AWS_DEFAULT_REGION: "{{ .stack.region }}"       # required because of https://github.com/hashicorp/terraform/issues/21408
       - name: tf-plan
         print: verbose                     # print the plan to the console
         command: "{{ .kapp.vars.terraform }}"
@@ -49,6 +54,8 @@ run_units:
             -out
             {{ .kapp.vars.tf_plan_path }}
             {{ .kapp.vars.tf_params }}
+        env_vars:
+          AWS_DEFAULT_REGION: "{{ .stack.region }}"       # required because of https://github.com/hashicorp/terraform/issues/21408
     apply_install:
       - name: tf-apply
         print: verbose

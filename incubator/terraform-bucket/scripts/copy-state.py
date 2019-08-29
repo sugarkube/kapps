@@ -16,6 +16,9 @@ import sys
 import os
 import re
 import subprocess
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 INSTALL="install"
 DELETE="delete"
@@ -32,7 +35,7 @@ def main():
 
 
 def run(mode, backend_path):
-    print("Running in %s mode" % mode)
+    logging.info("Running in %s mode" % mode)
     if mode == INSTALL:
         return install(backend_path)
     elif mode == DELETE:
@@ -48,43 +51,43 @@ def _get_remote_backend(backend_path):
     bucket = bucket.group(1)
     key = re.search(r'key\s*=\s*"([^"]+)"', contents)
     key = key.group(1)
-    print("Extracted bucket='%s', key='%s' from %s" % (bucket, key, backend_path))
+    logging.info("Extracted bucket='%s', key='%s' from %s" % (bucket, key, backend_path))
     return (bucket, key)
 
 
 def install(backend_path):
     tf_dir = os.path.dirname(backend_path)
-    print("Terraform directory: %s" % tf_dir)
+    logging.info("Terraform directory: %s" % tf_dir)
 
     bucket, path = _get_remote_backend(backend_path)
 
     # check whether the state bucket exists
     result = subprocess.run([AWS, "s3", "ls", "s3://%s" % bucket])
     if result.returncode == 0:
-        print("Bucket '%s' exists" % bucket)
+        logging.info("Bucket '%s' exists" % bucket)
 
         state_file = os.path.join(tf_dir, STATE_FILE)
         if os.path.exists(state_file):
             state_file_s3_path = "s3://%s/%s" % (bucket, path)
             result = subprocess.run([AWS, "s3", "cp", state_file, state_file_s3_path])
             if result.returncode == 0:
-                print("State file copied to %s. Deleting local copy" % state_file_s3_path)
+                logging.info("State file copied to %s. Deleting local copy" % state_file_s3_path)
                 os.unlink(state_file)
             else:
                 raise RuntimeError("Error copying state file to %s" % state_file_s3_path)
 
         if not backend_path.endswith('.tf'):
             correct_backend_path = backend_path + ".tf"
-            print("Renaming %s to %s" % (backend_path, correct_backend_path))
+            logging.info("Renaming %s to %s" % (backend_path, correct_backend_path))
             os.rename(backend_path, correct_backend_path)
 
     else:
-        print("Bucket '%s' doesn't exist" % bucket)
+        logging.info("Bucket '%s' doesn't exist" % bucket)
 
 
 def delete(backend_path):
     tf_dir = os.path.dirname(backend_path)
-    print("Terraform directory: %s" % tf_dir)
+    logging.info("Terraform directory: %s" % tf_dir)
 
     bucket, path = _get_remote_backend(backend_path)
 
@@ -92,19 +95,19 @@ def delete(backend_path):
     state_file_s3_path = "s3://%s/%s" % (bucket, path)
     result = subprocess.run([AWS, "s3", "ls", state_file_s3_path])
     if result.returncode == 0:
-        print("Remote state file '%s' exists" % state_file_s3_path)
+        logging.info("Remote state file '%s' exists" % state_file_s3_path)
         local_state_file = os.path.join(tf_dir, STATE_FILE)
 
         result = subprocess.run([AWS, "s3", "mv", state_file_s3_path, local_state_file])
         if result.returncode == 0:
-            print("Remote state file '%s' moved to '%s'" % (state_file_s3_path, local_state_file))
+            logging.info("Remote state file '%s' moved to '%s'" % (state_file_s3_path, local_state_file))
         else:
             raise RuntimeError("Error moving moving remote state file '%s' to '%s'" % (state_file_s3_path,
                                                                                        local_state_file))
 
     backend_file = backend_path + ".tf"
     if os.path.exists(backend_file):
-        print("Deleting local backend file '%s'" % backend_file)
+        logging.info("Deleting local backend file '%s'" % backend_file)
         os.unlink(backend_file)
 
 
