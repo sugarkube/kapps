@@ -158,7 +158,7 @@ def _is_vpc_associated_with_hosted_zone(vpc_id, hosted_zone_id):
     logging.info("Checking whether VPC '%s' is associated with hosted zone '%s'" % (vpc_id, hosted_zone_id))
     result = subprocess.run(args=[AWS, '--output', 'text', 'route53', 'get-hosted-zone',
                                   '--id', hosted_zone_id, 
-                                  '--query', 'VPCs[?VPCId == `%s`].VpcId | [0]' % vpc_id],
+                                  '--query', 'VPCs[?VPCId == `%s`].VPCId | [0]' % vpc_id],
                             capture_output=True)
 
     if not result.returncode == 0:
