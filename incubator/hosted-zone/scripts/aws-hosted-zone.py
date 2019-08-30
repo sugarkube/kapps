@@ -98,9 +98,9 @@ def install(hosted_zone_name, vpc_region):
     
     placeholder_vpc_id = _get_vpc_by_name(placeholder_vpc_name)
     if placeholder_vpc_id:
-        # delete the placeholder VPC
+        # dissociate and delete the placeholder VPC
         if _is_vpc_associated_with_hosted_zone(placeholder_vpc_id, hosted_zone_id):
-            _dissociate_vpc_from_hosted_zone(vpc_id=vpc_id,
+            _dissociate_vpc_from_hosted_zone(vpc_id=placeholder_vpc_id,
                                              hosted_zone_id=hosted_zone_id,
                                              vpc_region=vpc_region)
         
