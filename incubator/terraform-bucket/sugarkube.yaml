@@ -2,9 +2,10 @@ requires:
   - terraform
   - aws
 
-output:
-  - name: terraform
-    value: "{{ .kapp.vars.tf_output_path }}"
+outputs:
+  - id: terraform
+    path: "{{ .kapp.vars.tf_output_path }}"
+    format: json
 
 ignore_global_defaults: true        # this opts out of using the terraform stuff configured in sugarkube-conf.yaml.
                                     # Without this we'd get a backend.tf file whether we wanted one or not.
