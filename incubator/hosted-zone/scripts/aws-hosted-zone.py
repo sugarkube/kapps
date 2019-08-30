@@ -118,7 +118,7 @@ def _dissociate_vpc_from_hosted_zone(vpc_id, hosted_zone_id, vpc_region):
     :param vpc_region: 
     """
     logging.info("Dissociating VPC '%s' with hosted zone '%s'" % (vpc_id, hosted_zone_id))
-    result = subprocess.run(args=[AWS, '--output', 'text', 'route53', 'dissociate-vpc-from-hosted-zone',
+    result = subprocess.run(args=[AWS, '--output', 'text', 'route53', 'disassociate-vpc-from-hosted-zone',
                                   '--hosted-zone-id', hosted_zone_id, 
                                   '--vpc', 'VPCRegion=%s,VPCId=%s' % (vpc_region, vpc_id)],
                             capture_output=True)
