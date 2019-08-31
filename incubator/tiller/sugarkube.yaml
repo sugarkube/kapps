@@ -8,7 +8,8 @@
 version: 0.1.0
 
 templates:
-  - source: k8s/rbac.tpl.yaml
+  rbac:
+    source: k8s/rbac.tpl.yaml
     dest: k8s/_generated_rbac.yaml
 
 # These will be passed as env vars as well as any explicitly declared
@@ -18,7 +19,7 @@ vars:
   role: ClusterRole
   role_name: cluster-admin
   role_binding: ClusterRoleBinding
-  templated_path: "{{ index .kapp.templates 0 }}"
+  templated_path: "{{ .kapp.templates.rbac.rendered_path }}"
 
 requires:
   - kubectl
