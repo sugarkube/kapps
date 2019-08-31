@@ -6,5 +6,6 @@ requires:
   - terraform
 
 templates:
-  - source: kapp-templates/values.tpl.yaml
+  values:
+    source: kapp-templates/values.tpl.yaml
     dest: _generated_values.yaml
