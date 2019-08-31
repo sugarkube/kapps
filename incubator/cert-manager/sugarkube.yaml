@@ -4,10 +4,11 @@
 
 # Env vars to pass to this kapp. Values can come from variables.
 vars:
-  templated_path: "{{ index .kapp.templates 0 }}"
+  templated_path: "{{ .kapp.templates.namespace.rendered_path }}"
 
 templates:
-  - source: k8s/namespace.tpl.yaml
+  namespace:
+    source: k8s/namespace.tpl.yaml
     dest: k8s/_generated_namespace.yaml
 
 requires:
