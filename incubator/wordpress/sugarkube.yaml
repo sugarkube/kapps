@@ -7,7 +7,8 @@ vars:
   main_kapp_dir: wordpress
 
 templates:
-  - source: kapp-templates/values.tpl.yaml
+  values:
+    source: kapp-templates/values.tpl.yaml
     dest: _generated_values.yaml
 
 requires:
