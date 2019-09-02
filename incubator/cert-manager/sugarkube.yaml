@@ -2,10 +2,6 @@
 # text functions.  Variable values come from the final set of variables
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
 
-# Env vars to pass to this kapp. Values can come from variables.
-vars:
-  templated_path: "{{ .kapp.templates.namespace.rendered_path }}"
-
 templates:
   namespace:
     source: k8s/namespace.tpl.yaml
@@ -52,7 +48,7 @@ run_units:
         args: |
           --context={{ .kapp.vars.kube_context }}
           apply
-          -f={{ .kapp.vars.templated_path }}
+          -f={{ .kapp.templates.namespace.rendered_path }}
         env_vars:
           KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
         merge_priority: 25
