@@ -19,7 +19,6 @@ vars:
   role: ClusterRole
   role_name: cluster-admin
   role_binding: ClusterRoleBinding
-  templated_path: "{{ .kapp.templates.rbac.rendered_path }}"
 
 requires:
   - kubectl
@@ -37,7 +36,7 @@ run_units:
           --context={{ .kapp.vars.kube_context }}
           --namespace={{ .kapp.vars.tiller_namespace }}
           apply
-          -f={{ .kapp.vars.templated_path }}
+          -f={{ .kapp.templates.rbac.rendered_path }}
         env_vars:
           KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
       - name: install tiller
