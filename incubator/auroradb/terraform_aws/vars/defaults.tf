@@ -1,3 +1,2 @@
-db_engine = "aurora-postgresql"
-db_engine_mode = "serverless"
+db_engine = "aurora"
 master_username = "root"

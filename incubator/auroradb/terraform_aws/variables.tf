@@ -2,10 +2,6 @@ variable "project" {
   description = "Short, single-word name of the project. Used in identifiers for namespacing."
 }
 
-variable "release" {
-  description = "Release name. Used for namespacing."
-}
-
 variable "cluster" {
   description = "Unique per cluster. Allows multiple clusters per cloud-provider account. Used for namespacing."
 }
@@ -18,16 +14,14 @@ variable "db_engine" {
   description = "E.g. mysql, postgres, etc."
 }
 
-variable "db_engine_mode" {
-  description = "E.g. serverless, etc."
-}
-
 variable "master_username" {
   description = "Username of the master DB user"
 }
 
+// the master password should be provided as a variable, or ideally be pulled from a secret store
 variable "master_password" {
   description = "Password for the master DB user"
+  default = null
 }
 
 variable "skip_final_snapshot" {
