@@ -8,7 +8,7 @@ locals {
   identifer = "${var.project}-${replace(var.cluster, ".", "-")}"
 }
 
-resource "aws_rds_cluster" "postgresql" {
+resource "aws_rds_cluster" "db" {
   cluster_identifier = "${local.identifer}"
   engine = "${var.db_engine}"
   engine_mode = "serverless"
