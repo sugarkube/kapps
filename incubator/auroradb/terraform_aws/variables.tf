@@ -56,3 +56,15 @@ variable "vpc_security_group_ids" {
   description = "List of VPC security groups to associate with the Cluster"
   default = null
 }
+
+variable "database_name" {
+  description = "Name of a database to create"
+}
+
+variable "worker_sg_tag" {
+  description = "Name of a tag associated with a security group attached to worker nodes"
+}
+
+variable "worker_sg_value" {
+  description = "Value of the tag associated with security group attached to worker nodes to select them by"
+}

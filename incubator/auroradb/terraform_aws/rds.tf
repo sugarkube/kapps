@@ -10,22 +10,21 @@ locals {
 
 data "aws_vpc" "cluster_vpc" {
   tags = {
-    Name = "eksctl-eksdev1-cluster/VPC"
+    Name = "eksctl-${var.cluster}-cluster/VPC"    # todo - take these from vars depending on whether it's kops/EKS
   }
 }
 
 data "aws_subnet_ids" "vpc_subnets" {
   vpc_id = "${data.aws_vpc.cluster_vpc.id}"
   tags = {
-    "kubernetes.io/role/internal-elb": 1
+    "kubernetes.io/role/internal-elb": 1    # todo - take these from vars depending on whether it's kops/EKS
   }
 }
 
 data "aws_security_group" "worker_security_groups" {
   vpc_id = "${data.aws_vpc.cluster_vpc.id}"
   tags = {
-    "alpha.eksctl.io/cluster-name": "eksdev1"
-    "alpha.eksctl.io/nodegroup-name": "nodegroup-1"
+    "${var.worker_sg_tag}": "${var.worker_sg_value}"
   }
 }
 
@@ -75,6 +74,7 @@ resource "aws_rds_cluster" "db" {
   db_subnet_group_name = "${aws_db_subnet_group.default.name}"
   vpc_security_group_ids = [
     aws_security_group.rds.id]
+  database_name = "${var.database_name}"
 
   scaling_configuration {
     auto_pause = true

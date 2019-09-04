@@ -1,5 +1,8 @@
 # This kapp creates an Aurora serverless database. It requires IDs of VPCs to permit traffic from (i.e. the
 # VPCs of Kops/EKS clusters).
+vars:
+  database_name: test-db        # pass 'wordpress' for wordpress sites
+  worker_sg_value: "{{ .node_group_name }}"
 
 requires:
   - terraform
