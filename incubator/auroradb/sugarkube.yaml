@@ -6,3 +6,8 @@ vars:
 
 requires:
   - terraform
+
+outputs:
+  - format: yaml
+    id: terraform
+    path: "{{ .kapp.vars.tf_output_path }}"
