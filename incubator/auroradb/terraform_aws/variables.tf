@@ -1,5 +1,5 @@
-variable "project" {
-  description = "Short, single-word name of the project. Used in identifiers for namespacing."
+variable "prefix" {
+  description = "Short prefix. Used in identifiers for namespacing. Allows this to be used multiple times in a stack"
 }
 
 variable "cluster" {

@@ -12,3 +12,8 @@ outputs:
   - format: yaml
     id: terraform
     path: "{{ .kapp.vars.tf_output_path }}"
+
+templates:
+  values:
+    source: "{{ .kapp.vars.terraform_dir }}/kapp-templates/vars.tpl.tfvars"
+    dest: "{{ .kapp.vars.terraform_dir }}/_generated_vars.tfvars"

@@ -5,7 +5,7 @@ resource "random_password" "password" {
 }
 
 locals {
-  identifer = "${var.project}-${replace(var.cluster, ".", "-")}"
+  identifer = "${var.prefix}-${replace(var.cluster, ".", "-")}"
 }
 
 data "aws_vpc" "cluster_vpc" {
