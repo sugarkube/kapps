@@ -5,6 +5,10 @@
 vars:
   hostname: wordpress.localhost
   main_kapp_dir: wordpress
+#  db_host:           # set all these in the manifest
+#  db_user:
+#  db_password:
+#  db_name:
 
 templates:
   values:
