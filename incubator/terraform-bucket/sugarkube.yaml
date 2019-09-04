@@ -64,6 +64,9 @@ run_units:
       - call: output      # call the whole 'output' unit
         merge_priority: 15         # apply terraform *before* installing a helm chart
       - call: plan_install/copy-state
+      - name: tf-init-reconfigure
+        command: "{{ .kapp.vars.terraform }}"
+        args: init -reconfigure         # reconfigure terraform to use the new backend
     plan_delete:
       - call: plan_install/tf-init       # call the tf-init step defined under `plan_install`
         merge_priority: 25  # this needs to be merged after helm has run
@@ -78,8 +81,8 @@ run_units:
         args: delete {{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/terraform_{{ .stack.provider }}/_generated_backend
         print: verbose
         merge_priority: 5
-      - call: plan_install/tf-init       # call the tf-init step defined under `plan_install`
-        merge_priority: 25  # this needs to be merged after helm has run
+      - call: apply_install/tf-init-reconfigure       # call the tf-init-reconfigure step defined under `apply_install`
+        merge_priority: 25  # this needs to be merged after our script has run
       - name: tf-destroy
         command: "{{ .kapp.vars.terraform }}"
         args: destroy -auto-approve {{ .kapp.vars.tf_params }}      # command auto-approved

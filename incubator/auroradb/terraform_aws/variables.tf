@@ -1,5 +1,5 @@
-variable "project" {
-  description = "Short, single-word name of the project. Used in identifiers for namespacing."
+variable "prefix" {
+  description = "Short prefix. Used in identifiers for namespacing. Allows this to be used multiple times in a stack"
 }
 
 variable "cluster" {
@@ -21,40 +21,40 @@ variable "master_username" {
 // the master password should be provided as a variable, or ideally be pulled from a secret store
 variable "master_password" {
   description = "Password for the master DB user"
-  default = null
+  default     = null
 }
 
 variable "skip_final_snapshot" {
   description = "Whether to take a final snapshot when the cluster is deleted"
-  default = false
+  default     = false
 }
 
 variable "max_capacity" {
   description = "Max DB capacity when using the serverless engine mode"
-  default = 2
+  default     = 2
 }
 
 variable "min_capacity" {
   description = "min DB capacity when using the serverless engine mode"
-  default = 1
+  default     = 1
 }
 
 variable "auto_pause_seconds" {
   description = "The time, in seconds, before an Aurora DB cluster in serverless mode is paused"
-  default = 300
+  default     = 300
 }
 
 variable "timeout_action" {
   description = "The action to take when the timeout is reached"
-  default = "ForceApplyCapacityChange"
+  default     = "ForceApplyCapacityChange"
 }
 
 // these need to come from an EKS/Kops cluster to permit it to access the DB
 // todo - can we just query for them directly using the cluster name?
 variable "vpc_security_group_ids" {
-  type = "list"
+  type        = "list"
   description = "List of VPC security groups to associate with the Cluster"
-  default = null
+  default     = null
 }
 
 variable "database_name" {
