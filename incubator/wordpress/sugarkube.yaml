@@ -13,7 +13,6 @@ templates:
 
 requires:
   - helm          # these first 2 run units are defined in the main sugarkube-conf.yaml file.
-  - terraform
   - fixtures      # this corresponds to the run unit defined below
 
 # This example shows how to run an extra script after installing a kapp. Because of the 'condition' it'll only be

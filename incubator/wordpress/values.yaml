@@ -10,3 +10,6 @@ wordpress:
     db:
       name: wordpress
       user: wordpress
+
+mariadb:
+  enabled: false      # use RDS instead, except locally
