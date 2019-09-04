@@ -3,6 +3,7 @@
 vars:
   database_name: test-db        # pass 'wordpress' for wordpress sites
   worker_sg_value: "{{ .node_group_name }}"
+  main_kapp_dir: auroradb
 
 requires:
   - terraform
