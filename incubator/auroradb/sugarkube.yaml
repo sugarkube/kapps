@@ -1,2 +1,5 @@
+# This kapp creates an Aurora serverless database. It requires IDs of VPCs to permit traffic from (i.e. the
+# VPCs of Kops/EKS clusters).
+
 requires:
   - terraform

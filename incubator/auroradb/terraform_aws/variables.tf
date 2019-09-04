@@ -48,3 +48,11 @@ variable "timeout_action" {
   description = "The action to take when the timeout is reached"
   default = "ForceApplyCapacityChange"
 }
+
+// these need to come from an EKS/Kops cluster to permit it to access the DB
+// todo - can we just query for them directly using the cluster name?
+variable "vpc_security_group_ids" {
+  type = "list"
+  description = "List of VPC security groups to associate with the Cluster"
+  default = null
+}
