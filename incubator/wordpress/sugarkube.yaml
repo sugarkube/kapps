@@ -10,6 +10,11 @@ templates:
   values:
     source: kapp-templates/values.tpl.yaml
     dest: _generated_values.yaml
+  aws_values:
+    source: kapp-templates/values-aws.tpl.yaml
+    dest: _generated_values-aws.yaml
+    conditions:
+      - "{{ eq .stack.provider \"aws\" }}"        # only template this file when running in AWS
 
 requires:
   - helm          # these first 2 run units are defined in the main sugarkube-conf.yaml file.

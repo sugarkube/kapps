@@ -1,0 +1,11 @@
+wordpress:
+  externalDatabase:
+    host: {{ .outputs.shared_date__auroradb.terraform.endpoint }}
+    user: {{ .outputs.shared_date__auroradb.terraform.master_user }}
+    password: {{ .outputs.shared_date__auroradb.terraform.master_password }}
+    database: {{ .outputs.shared_date__auroradb.terraform.database }}
+
+
+
+# todo - document that to save money users could create a database and a DB user for this wordpress instance and
+#   share the same RDS instance instead of having one RDS per wordpress
