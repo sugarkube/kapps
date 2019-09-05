@@ -1,3 +1,3 @@
 cert:
-  kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
-  name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}
+  kind: {{ .kapp.vars.cert_manager_kind }}
+  name: {{ .kapp.vars.cert_manager_name }}
