@@ -1,9 +1,9 @@
 wordpress:
   externalDatabase:
-    host: {{ .kapp.vars.db_host }}
-    user: {{ .kapp.vars.db_user }}
-    password: {{ .kapp.vars.db_password }}
-    database: {{ .kapp.vars.db_name }}
+    host: "{{ .kapp.vars.db_host }}"
+    user: "{{ .kapp.vars.db_user }}"
+    password: "{{ .kapp.vars.db_password }}"
+    database: "{{ .kapp.vars.db_name }}"
 
 # todo - document that to save money users could create a database and a DB user for this wordpress instance and
 #   share the same RDS instance instead of having one RDS per wordpress
