@@ -83,10 +83,12 @@ run_units:
         merge_priority: 5
       - call: apply_install/tf-init-reconfigure       # call the tf-init-reconfigure step defined under `apply_install`
         merge_priority: 25  # this needs to be merged after our script has run
+      - call: plan_install/tf-init       # call the tf-init step defined under `plan_install`
+        merge_priority: 30      # init again because terraform still doesn't work after reconfiguring
       - name: tf-destroy
         command: "{{ .kapp.vars.terraform }}"
         args: destroy -auto-approve {{ .kapp.vars.tf_params }}      # command auto-approved
-        merge_priority: 30         # delete terraform *after* deleting a helm chart
+        merge_priority: 50         # delete terraform *after* deleting a helm chart
     output:         # todo - we'll probably need the ability to add conditions to entire run units, e.g. gt 0 len(.kapp.output)
       - call: plan_install/tf-init       # call the tf-init step defined under `plan_install`
       - name: tf-refresh
