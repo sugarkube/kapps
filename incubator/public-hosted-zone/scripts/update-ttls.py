@@ -13,10 +13,11 @@ import sys
 import logging
 import json
 import tempfile
+import os
 
 logging.basicConfig(level=logging.DEBUG)
 
-AWS="aws"       # path to the AWS CLI binary
+AWS=os.getenv("AWS", "aws")       # path to the AWS CLI binary
 
 
 def main():
@@ -60,7 +61,7 @@ def _get_hosted_zone_id(hosted_zone_name):
                                   '--query', 'HostedZones[?Name == `%s`].Id | [0]' % hosted_zone_name],
                             capture_output=True)
     if not result.returncode == 0:
-        raise RuntimeError("Failed to get the ID of hosted zone '%s': %s" % (hosted_zone_id, result))
+        raise RuntimeError("Failed to get the ID of hosted zone '%s': %s" % (hosted_zone_name, result))
     return result
 
 
