@@ -12,5 +12,5 @@ variable "region" {
 
 variable "ns_ttl" {
   description = "TTL of NS records"
-  default = 30
+  default     = 30
 }

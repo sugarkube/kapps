@@ -1,3 +1,13 @@
+vars:
+  ns_ttl: 30
+#  hosted_zone:      # set these in a manifest
+#  parent_hosted_zone:
+
 requires:
   - aws
   - terraform
+
+templates:
+  values:
+    source: "{{ .kapp.vars.terraform_dir }}/kapp-templates/vars.tpl.tfvars"
+    dest: "{{ .kapp.vars.terraform_dir }}/_generated_vars.tfvars"
