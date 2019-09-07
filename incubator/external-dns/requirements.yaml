@@ -1,5 +1,0 @@
-# Standard Helm requirements.yaml file
-dependencies:
-- name: external-dns
-  version: "2.6.0"
-  repository: "@stable"
