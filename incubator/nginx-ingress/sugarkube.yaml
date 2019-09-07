@@ -4,7 +4,7 @@
 
 # These will be passed as env vars
 vars:
-  ingress_class: nginx
+  ingress_class: "{{ .kapp.vars.namespace }}"
 #  cert_manager_kind:       # set these in a manifest
 #  cert_manager_name:
 
