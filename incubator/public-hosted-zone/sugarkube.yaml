@@ -1,6 +1,7 @@
 vars:
   script_path: "{{ .kapp.cacheRoot }}/public-hosted-zone/scripts/{{ .stack.provider }}-update-ttls.py"
   ns_ttl: 30
+  create_acm_certs: false           # set this to true to create and validate ACM certs for the hosted zone
 #  hosted_zone:      # set these in a manifest
 #  parent_hosted_zone:
 
@@ -15,9 +16,12 @@ outputs:
     path: "{{ .kapp.vars.tf_output_path }}"
 
 templates:
-  values:
+  tfvars:
     source: "{{ .kapp.vars.terraform_dir }}/kapp-templates/vars.tpl.tfvars"
     dest: "{{ .kapp.vars.terraform_dir }}/_generated_vars.tfvars"
+  acm:
+    source: "{{ .kapp.vars.terraform_dir }}/kapp-templates/acm.tpl.tf"
+    dest: "{{ .kapp.vars.terraform_dir }}/_generated_acm.tf"
 
 run_units:
   script:
