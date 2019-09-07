@@ -5,11 +5,14 @@
 vars:
   hostname: wordpress.localhost
   main_kapp_dir: wordpress
+  record_name: "{{ .kapp.id }}"
 #  db_host:           # set all these in the manifest
 #  db_user:
 #  db_password:
 #  db_name:
 #  cluster_issuer:      # name of a cert manager cluster issuer for issuing certs
+# hosted_zone         # hosted zone to create a CNAME DNS record under (AWS only)
+# cname_hostname      # target of the CNAME record (AWS only)
 
 templates:
   values:
@@ -20,8 +23,14 @@ templates:
     dest: _generated_values-aws.yaml
     conditions:
       - "{{ eq .stack.provider \"aws\" }}"        # only template this file when running in AWS
+  aws_tf_values:
+    source: kapp-templates/vars-aws.tpl.tfvars
+    dest: "{{ .kapp.vars.terraform_dir }}/_generated_vars.tfvars"
+    conditions:
+      - "{{ eq .stack.provider \"aws\" }}"        # only template this file when running in AWS
 
 requires:
+  - terraform
   - helm          # these first 2 run units are defined in the main sugarkube-conf.yaml file.
   - fixtures      # this corresponds to the run unit defined below
 
