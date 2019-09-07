@@ -1,3 +1,7 @@
 cert:
   kind: {{ .kapp.vars.cert_manager_kind }}
   name: {{ .kapp.vars.cert_manager_name }}
+
+nginx-ingress:
+  controller:
+    ingressClass: "{{ .kapp.vars.ingress_class }}"
