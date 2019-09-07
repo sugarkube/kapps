@@ -1,0 +1,4 @@
+nginx-ingress:
+  controller:
+    service:
+      type: LoadBalancer          # Create an AWS LB for each ingress
