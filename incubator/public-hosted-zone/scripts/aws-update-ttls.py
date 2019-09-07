@@ -62,7 +62,7 @@ def _get_hosted_zone_id(hosted_zone_name):
                             capture_output=True)
     if not result.returncode == 0:
         raise RuntimeError("Failed to get the ID of hosted zone '%s': %s" % (hosted_zone_name, result))
-    return result
+    return result.stdout.strip()
 
 
 def _update_ns_ttl(hosted_zone_name, hosted_zone_id, name_servers, ttl):
@@ -131,9 +131,11 @@ def update_records(hosted_zone_id, spec):
 
     logging.info("Dumped json to file: %s" % temp_path)
 
-    return subprocess.run(args=[AWS, 'route53', 'change-resource-record-sets',
-                                '--hosted-zone-id', hosted_zone_id,
-                                '--change-batch', 'file://%s' % temp_path])
+    args = [AWS, 'route53', 'change-resource-record-sets',
+            '--hosted-zone-id', hosted_zone_id,
+            '--change-batch', 'file://%s' % temp_path]
+    logging.debug("Executing command: %s" % args)
+    return subprocess.run(args=args)
 
 
 if __name__ == "__main__":

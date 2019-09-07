@@ -1,4 +1,5 @@
 vars:
+  script_path: "{{ .kapp.cacheRoot }}/public-hosted-zone/scripts/{{ .stack.provider }}-update-ttls.py"
   ns_ttl: 30
 #  hosted_zone:      # set these in a manifest
 #  parent_hosted_zone:
@@ -6,8 +7,26 @@ vars:
 requires:
   - aws
   - terraform
+  - script
+
+outputs:
+  - format: yaml
+    id: terraform
+    path: "{{ .kapp.vars.tf_output_path }}"
 
 templates:
   values:
     source: "{{ .kapp.vars.terraform_dir }}/kapp-templates/vars.tpl.tfvars"
     dest: "{{ .kapp.vars.terraform_dir }}/_generated_vars.tfvars"
+
+run_units:
+  script:
+    working_dir: "{{ .kapp.cacheRoot }}"       # directory to use as the working directory
+    conditions:       # all must be true for any units to be run
+      - "{{ exists \"f\" .kapp.vars.script_path }}"          # won't run these if there's no script for the provider
+    apply_install:
+      - name: hosted-zone-ttls
+        print: verbose
+        command: "{{ .kapp.vars.script_path }}"
+        args: "{{ .kapp.vars.hosted_zone }} {{ .outputs.this.terraform.name_servers.value | join \",\" }}"
+        merge_priority: 100       # run this script last
