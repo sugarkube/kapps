@@ -5,8 +5,5 @@ wordpress:
     password: "{{ .kapp.vars.db_password }}"
     database: "{{ .kapp.vars.db_name }}"
 
-  service:
-    type: LoadBalancer      # create an ELB
-
 # todo - document that to save money users could create a database and a DB user for this wordpress instance and
 #   share the same RDS instance instead of having one RDS per wordpress
