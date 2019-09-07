@@ -3,6 +3,12 @@ resource "aws_kms_key" "key" {
   deletion_window_in_days = 10
 }
 
+// create an alias for convenience in the console
+resource "aws_kms_alias" "alias" {
+  name          = "alias/${var.cluster}"
+  target_key_id = "${aws_kms_key.key.key_id}"
+}
+
 resource "aws_s3_bucket" "bucket" {
   bucket = "${var.bucket_name}"
   acl    = "private"
