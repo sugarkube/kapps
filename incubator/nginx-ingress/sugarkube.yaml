@@ -4,14 +4,36 @@
 
 # These will be passed as env vars
 vars:
+  kubectl: kubectl
   ingress_class: "{{ .kapp.vars.namespace }}"
 #  cert_manager_kind:       # set these in a manifest
 #  cert_manager_name:
 
 requires:
   - helm
+  - script
 
 templates:
   values:
     source: kapp-templates/values.tpl.yaml
     dest: _generated_values.yaml
+
+outputs:
+  - id: lb-hostname
+    format: text
+    path: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/hostname.txt"
+    conditions:       # all must be true for this output to be loaded
+      - "{{ eq .stack.provider \"aws\" }}"        # we only need outputs when running on AWS
+
+run_units:
+  script:
+    working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}"       # directory to use as the working directory
+    conditions:       # all must be true for any units to be run
+      - "{{ eq .stack.provider \"aws\" }}"        # we only need outputs when running on AWS
+    apply_install:
+      - name: lb-hostname
+        command: "{{ .kapp.vars.kubectl }}"
+        args: -n {{ .kapp.vars.namespace }} get service -o jsonpath='{.items[].status.loadBalancer.ingress[].hostname}'
+        stdout: hostname.txt        # write output to this file
+        env_vars:
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
