@@ -6,6 +6,7 @@ vars:
   hostname: wordpress.localhost
   main_kapp_dir: wordpress
   record_name: "{{ .kapp.id }}"
+  ingress_class: nginx
 #  db_host:           # set all these in the manifest
 #  db_user:
 #  db_password:

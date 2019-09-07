@@ -4,6 +4,7 @@ wordpress:
     annotations:
       # use the ingress-shim annotation instead of an explicitly defined certificate
       "certmanager.k8s.io/cluster-issuer": {{ .kapp.vars.cluster_issuer }}
+      "kubernetes.io/ingress.class": {{ .kapp.vars.ingress_class }}
     hosts:
       - name: {{ .kapp.vars.hostname }}
     tls:
