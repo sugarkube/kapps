@@ -15,7 +15,7 @@ run_units:
         command: "{{ .kapp.vars.script_path }}"
         args: install --vpc-region {{ .stack.region }} {{ .cluster_name }}
     apply_delete:
-      - name: copy-state
+      - name: delete-hosted-zone
         print: verbose
         command: "{{ .kapp.vars.script_path }}"
         args: delete {{ .cluster_name }}
