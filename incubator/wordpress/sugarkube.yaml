@@ -11,7 +11,7 @@ vars:
 #  db_user:
 #  db_password:
 #  db_name:
-#  cluster_issuer:      # name of a cert manager cluster issuer for issuing certs
+#  cluster_issuer:      # name of a cert manager cluster issuer for issuing certs (via an ingress annotation)
 # hosted_zone         # hosted zone to create a CNAME DNS record under (AWS only)
 # cname_hostname      # target of the CNAME record (AWS only)
 
