@@ -2,19 +2,21 @@ jenkins:
   master:
     ingress:
       enabled: true
-      hostName: {{ .kapp.vars.release }}.{{ .cluster_name }}
+      annotations:
+        "kubernetes.io/ingress.class": {{ .kapp.vars.ingress_class }}
+      hostName: "{{ .kapp.vars.hostname }}"
       tls:
         - hosts:
-          - {{ .kapp.vars.release }}.{{ .cluster_name }}
-          secretName: {{ .kapp.vars.release }}-cert
+          - "{{ .kapp.vars.hostname }}"
+          secretName: "{{ .kapp.vars.release }}-cert"
 
     prometheus:
-      enabled: {{ .kapp.vars.prometheusEnabled }}
-      hostName: {{ .kapp.vars.release }}-prometheus.{{ .cluster_name }}
+      enabled: "{{ .kapp.vars.prometheusEnabled }}"
+      hostName: "{{ .kapp.vars.prometheus_hostname }}"
       tls:
         - hosts:
-          - {{ .kapp.vars.release }}-prometheus.{{ .cluster_name }}
-          secretName: {{ .kapp.vars.release }}-prometheus-cert
+          - "{{ .kapp.vars.prometheus_hostname }}"
+          secretName: "{{ .kapp.vars.release }}-prometheus-cert"
 cert:
-  kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
-  name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}
+  kind: "{{ .kapp.vars.cert_manager_issuer_kind }}"
+  name: "{{ .kapp.vars.cert_manager_issuer_name }}"
