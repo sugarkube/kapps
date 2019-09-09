@@ -3,30 +3,30 @@ prometheus-operator:
     ingress:
       enabled: true
       hosts:
-      - {{ .kapp.vars.prometheusHostname }}
+      - {{ .kapp.vars.prometheus_hostname }}
       tls:
         - hosts:
-            - {{ .kapp.vars.prometheusHostname }}
+            - {{ .kapp.vars.prometheus_hostname }}
           secretName: {{ .kapp.vars.release }}-cert
 
   grafana:
     ingress:
       enabled: true
       hosts:
-      - {{ .kapp.vars.grafanaHostname }}
+      - {{ .kapp.vars.grafana_hostname }}
       tls:
         - hosts:
-            - {{ .kapp.vars.grafanaHostname }}
+            - {{ .kapp.vars.grafana_hostname }}
           secretName: {{ .kapp.vars.release }}-cert
 
   alertmanager:
     ingress:
       enabled: true
       hosts:
-      - {{ .kapp.vars.alertManagerHostname }}
+      - {{ .kapp.vars.alert_manager_hostname }}
       tls:
         - hosts:
-            - {{ .kapp.vars.alertManagerHostname }}
+            - {{ .kapp.vars.alert_manager_hostname }}
           secretName: {{ .kapp.vars.release }}-cert
 
 cert:
