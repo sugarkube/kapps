@@ -1,3 +1,6 @@
 wordpress:
   mariadb:
     enabled: true
+
+mariadb:
+  enabled: true
