@@ -1,6 +1,12 @@
 # This file is a golang template that supports sprig (https://masterminds.github.io/sprig/)
 # text functions.  Variable values come from the final set of variables
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
+vars:
+  hostname: "{{ .kapp.vars.release }}.localhost"
+  ingress_class: nginx
+#  cert_manager_issuer_kind:    # set these in a manifest
+#  cert_manager_issuer_name:
+
 requires:
   - helm
   - terraform

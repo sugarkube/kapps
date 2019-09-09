@@ -1,13 +1,15 @@
 keycloak:
   keycloak:
     ingress:
+      annotations:
+        "kubernetes.io/ingress.class": {{ .kapp.vars.ingress_class }}
       hosts:
-        - {{ .kapp.vars.release }}.{{ .cluster_name }}
+        - "{{ .kapp.vars.hostname }}"
       tls:
         - hosts:
-            - {{ .kapp.vars.release }}.{{ .cluster_name }}
+            - "{{ .kapp.vars.hostname }}"
           secretName: {{ .kapp.vars.release }}-cert
 
 cert:
-  kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
-  name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}
+  kind: "{{ .kapp.vars.cert_manager_issuer_kind }}"
+  name: "{{ .kapp.vars.cert_manager_issuer_name }}"
