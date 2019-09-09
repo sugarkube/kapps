@@ -1,38 +1,17 @@
 # Keycloak
 
-## Installation
-**Note**: Check the Makefile for additional env vars that need setting, e.g.:
-* HOSTED_ZONE - the domain name to create subdomain for this kapp, 
-  e.g. `example.com`
-
-### Local installation
-When running against a local provider, no AWS resources will be created. Use
-the following to install locally:
-```
-PROVIDER=local APPROVED=true make install
-``` 
-
-Add the Minikube cluster IP to `/etc/hosts`:
-```
-echo $(minikube ip) keycloak.localhost | sudo tee -a /etc/hosts
-```
-
-Then go to `https://keycloak.localhost`.
-
-### AWS installation
-Installing onto an AWS Kubernetes cluster will create an RDS database. The size
-of the instance will depend on the environment. E.g. to install using the dev
-settings, first export your AWS credentials to the shell then run:
-```
-PROVIDER=aws APPROVED=false make install \
-  tf-opts='-var-file=vars/defaults.tfvars -var-file=vars/dev.tfvars'
-PROVIDER=aws APPROVED=true make install \
-  tf-opts='-var-file=vars/defaults.tfvars -var-file=vars/dev.tfvars'
-```
-The first command will make Terraform plan its operations, and the second 
-invocation will apply it.
+Since this is just an example we won't create an RDS database. However, in reality in prod you'd probably want to create one outside of an ephemeral cluster so it could be used by different clusters. Keeping state out of your clusters makes using ephemeral clusters simpler.
 
 ## Usage
+This kapp relies on nginx ingress to proxy traffic. To access Keycloak after installing this kapp on Minikube, do the following:
+
+  1. Get the nodeport that nginx-ingress is running on with e.g. `minikube service -n nginx1 nginx1-nginx-ingress-controller`
+  1. The output of the above command should be a table containing an entry like `http://192.168.99.112:32446` under the URL column.
+  1. Edit `/etc/hosts` to include the ingress hostname of this kapp and the above IP, e.g. if this kapp's ingress hostname is `keycloak.localhost`, for the above output you'd add an entry `keycloak.localhost   192.168.99.112` to `/etc/hosts`.
+  1. Now use the port number from above to access the site, e.g.: `https://keycloak.localhost:32446`. You'll have to accept the self-signed cert, but now you'll be accessing Keycloak through nginx, just as you would when hosted in the Cloud.
+  
+
+## Password
 After installation using the settings in this kapp, retrieve the 
 randomly-generated admin password by running:
 ```
