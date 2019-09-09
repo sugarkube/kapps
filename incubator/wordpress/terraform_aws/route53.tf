@@ -4,7 +4,7 @@ data "aws_route53_zone" "zone" {
 
 resource "aws_route53_record" "record" {
   zone_id = "${data.aws_route53_zone.zone.zone_id}"
-  name    = "${var.record_name}"
+  name    = "${var.dns_record_name}"
   type    = "CNAME"
   ttl     = "${var.ttl}"
   records = ["${var.cname_hostname}"]

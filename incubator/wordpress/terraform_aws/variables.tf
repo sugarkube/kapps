@@ -2,7 +2,7 @@ variable "region" {
   description = "AWS region name. Used for namespacing global resources."
 }
 
-variable "record_name" {
+variable "dns_record_name" {
   description = "Non-fully-qualified name of the DNS record to create (e.g. 'site1')"
 }
 
