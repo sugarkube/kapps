@@ -11,7 +11,7 @@ jenkins:
           secretName: "{{ .kapp.vars.release }}-cert"
 
     prometheus:
-      enabled: "{{ .kapp.vars.prometheusEnabled }}"
+      enabled: "{{ .kapp.vars.prometheus_enabled }}"
       hostName: "{{ .kapp.vars.prometheus_hostname }}"
       tls:
         - hosts:
