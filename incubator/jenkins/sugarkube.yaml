@@ -5,8 +5,9 @@ vars:
   hostname: "{{ .kapp.vars.release }}.localhost"
   prometheus_hostname: "{{ .kapp.vars.release }}-prometheus.localhost"
   prometheusEnabled: true     # using a variable here allows prometheus to be easily (dis)abled for different stacks
+  ingress_class: nginx
 #  cert_manager_issuer_kind:    # set these in a manifest
-#  cerT_manager_issuer_name:
+#  cert_manager_issuer_name:
 
 requires:
   - helm
