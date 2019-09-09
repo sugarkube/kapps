@@ -2,9 +2,12 @@
 # text functions.  Variable values come from the final set of variables
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
 vars:
-  prometheusHostname: prometheus
-  grafanaHostname: grafana
-  alertManagerHostname: alertmanager
+  prometheusHostname: prometheus.localhost
+  grafanaHostname: grafana.localhost
+  alertManagerHostname: alertmanager.localhost
+  ingress_class: nginx
+#  cert_manager_issuer_kind:    # set these in a manifest
+#  cert_manager_issuer_name:
 
 requires:
   - helm

@@ -3,32 +3,32 @@ prometheus-operator:
     ingress:
       enabled: true
       hosts:
-      - {{ .kapp.vars.prometheusHostname }}.{{ .cluster_name }}
+      - {{ .kapp.vars.prometheusHostname }}
       tls:
         - hosts:
-            - {{ .kapp.vars.prometheusHostname }}.{{ .cluster_name }}
+            - {{ .kapp.vars.prometheusHostname }}
           secretName: {{ .kapp.vars.release }}-cert
 
   grafana:
     ingress:
       enabled: true
       hosts:
-      - {{ .kapp.vars.grafanaHostname }}.{{ .cluster_name }}
+      - {{ .kapp.vars.grafanaHostname }}
       tls:
         - hosts:
-            - {{ .kapp.vars.grafanaHostname }}.{{ .cluster_name }}
+            - {{ .kapp.vars.grafanaHostname }}
           secretName: {{ .kapp.vars.release }}-cert
 
   alertmanager:
     ingress:
       enabled: true
       hosts:
-      - {{ .kapp.vars.alertManagerHostname }}.{{ .cluster_name }}
+      - {{ .kapp.vars.alertManagerHostname }}
       tls:
         - hosts:
-            - {{ .kapp.vars.alertManagerHostname }}.{{ .cluster_name }}
+            - {{ .kapp.vars.alertManagerHostname }}
           secretName: {{ .kapp.vars.release }}-cert
 
 cert:
-  kind: {{ .outputs.bootstrap__cert_manager.clusterIssuer.kind }}
-  name: {{ .outputs.bootstrap__cert_manager.clusterIssuer.metadata.name }}
+  kind: "{{ .kapp.vars.cert_manager_issuer_kind }}"
+  name: "{{ .kapp.vars.cert_manager_issuer_name }}"
