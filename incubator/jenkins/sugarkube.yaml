@@ -6,13 +6,22 @@ vars:
   prometheus_hostname: "{{ .kapp.vars.release }}-prometheus.localhost"
   prometheus_enabled: true     # using a variable here allows prometheus to be easily (dis)abled for different stacks
   ingress_class: nginx
+  dns_record_name: "{{ .kapp.id }}"
 #  cert_manager_issuer_kind:    # set these in a manifest
 #  cert_manager_issuer_name:
+# hosted_zone         # hosted zone to create a CNAME DNS record under (AWS only)
+# cname_hostname      # target of the CNAME record (AWS only)
 
 requires:
   - helm
+  - terraform
 
 templates:
   values:
     source: kapp-templates/values.tpl.yaml
     dest: _generated_values.yaml
+  aws_tf_values:
+    source: kapp-templates/vars-aws.tpl.tfvars
+    dest: "{{ .kapp.vars.terraform_dir }}/_generated_vars.tfvars"
+    conditions:
+      - "{{ eq .stack.provider \"aws\" }}"        # only template this file when running in AWS
