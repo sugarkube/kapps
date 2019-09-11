@@ -1,0 +1,39 @@
+Generate CA:
+
+* cfssl gencert -initca -cn="cluster vpn CA" cert.json | cfssljson -bare ca
+
+Agent:
+
+* cfssl gencert -ca=ca.pem -cn="cluster vpn agent" -hostname="vpn.example.com,example.com,localhost" -ca-key=ca-key.pem cert.json | cfssljson -bare agent
+
+Server:
+
+* cfssl gencert -ca=ca.pem -cn="cluster vpn server" -hostname="vpn.example.com,example.com,localhost" -ca-key=ca-key.pem cert.json | cfssljson -bare server
+
+## Uploading
+* Server cert:
+aws acm import-certificate --certificate file://_generated_certs/server.pem --private-key file://_generated_certs/server-key.pem --certificate-chain file://_generated_certs/ca.pem
+
+(returns the cert ARN)
+
+aws acm add-tags-to-certificate --certificate-arn=arn:aws:acm:eu-west-2:xXXXX:certificate/1227a7a1-22d3-4d38-ae2a-a383c4d3853d --tags=Key=Name,Value='vpn server cert'
+
+* Client cert:
+aws acm import-certificate --certificate file://_generated_certs/agent.pem --private-key file://_generated_certs/agent-key.pem --certificate-chain file://_generated_certs/ca.pem
+
+(returns the cert ARN)
+
+aws acm add-tags-to-certificate --certificate-arn=arn:aws:acm:eu-west-2:xXXXX:certificate/1227a7a1-22d3-4d38-ae2a-a383c4d3853d --tags=Key=Name,Value='vpn client cert'
+
+## Create the VPN endpoint
+* Make sure to specify split tunnel and only permit traffic to the CIDR for the VPC
+* associate it with the private subnets
+
+## Download config file
+
+aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id cvpn-endpoint-0f0e25eef2471fe41 --output text > cluster-vpn.ovpn
+
+Add the client key and cert to it and fiddle with the DNS name (jeez... seriously?):
+
+* Add the cert between <cert></cert> tags and the private key between <key></key> tags.
+* Prepend a random string to the `remote` DNS endpoint
