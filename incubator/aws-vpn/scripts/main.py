@@ -27,10 +27,48 @@ def main():
     parser.add_argument('--cert-json', help='Path to a cfssl JSON file', default='../cfssl/cert.json')
 
     args = parser.parse_args()
-    return generate_certs(cluster_name=args.cluster_name,
-                          cert_json=args.cert_json,
-                          out_dir=args.out_dir,
-                          hostnames=args.hostnames)
+
+    out_dir = args.out_dir
+    out_dir = os.path.abspath(out_dir)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
+    generate_certs(cluster_name=args.cluster_name,
+                   cert_json=args.cert_json,
+                   out_dir=out_dir,
+                   hostnames=args.hostnames)
+
+    import_certs(out_dir=out_dir,
+                 cluster_name=args.cluster_name)
+
+
+def import_certs(out_dir, cluster_name):
+    """
+    Imports certs into AWS using the CLI. We don't use terraform because it doesn't support adding tags to certs and
+    we should do that
+    :param out_dir:
+    """
+    arns = {}
+
+    for actor in ['client', 'server']:
+        command = '%s acm import-certificate --certificate file://%s/%s.pem --private-key file://%s/%s-key.pem ' \
+                  '--certificate-chain file://%s/ca.pem --output=text' %(AWS, out_dir, actor, out_dir, actor, out_dir)
+        logging.info("Executing command in %s: %s" % (out_dir, command))
+        print("Importing %s certs to AWS..." % actor)
+        result = subprocess.run(command, shell=True, check=True, cwd=out_dir, capture_output=True)
+        logging.info("Got output: %s" % result)
+        arns[actor] = result.stdout.decode("utf-8").strip()
+
+        print("Tagging cert in AWS...")
+        command = '%s acm add-tags-to-certificate --certificate-arn=%s --tags=Key=Name,Value="%s VPN %s cert"' % (
+            AWS, arns[actor], cluster_name, actor)
+        subprocess.run(command, shell=True, check=True)
+
+    print("Successfully imported and tagged certs: ")
+    for k, v in arns.items():
+        print('='.join([k, v]))
+
+    print()
 
 
 def generate_certs(cluster_name, cert_json, out_dir, hostnames=""):
@@ -39,10 +77,6 @@ def generate_certs(cluster_name, cert_json, out_dir, hostnames=""):
     :param cluster_name: Single word name of the cluster (for namespacing)
     :param hostnames: Hostnames to add to the client/server certs
     """
-    out_dir = os.path.abspath(out_dir)
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-
     cert_json = os.path.abspath(cert_json)
 
     # generate CA certs
@@ -54,7 +88,6 @@ def generate_certs(cluster_name, cert_json, out_dir, hostnames=""):
     # generate client/server certs
     for actor in ['client', 'server']:
         # command = '%s gencert -initca -cn="%s VPN CA" %s | %s -bare ca' % (CFSSL, cluster_name, cert_json, CFSSL_JSON)
-        actor_flag = 'agent' if actor == 'client' else actor
         command = '%s gencert -ca=ca.pem -cn="%s VPN %s" -hostname="%s" -ca-key=%s %s | %s -bare %s' % (
             CFSSL,
             cluster_name,
@@ -63,7 +96,7 @@ def generate_certs(cluster_name, cert_json, out_dir, hostnames=""):
             os.path.join(out_dir, "ca-key.pem"),
             cert_json,
             CFSSL_JSON,
-            actor_flag)
+            actor)
         logging.info("Executing command in %s: %s" % (out_dir, command))
         print("Generating %s certs" % actor)
         subprocess.run(command, shell=True, check=True, cwd=out_dir)
