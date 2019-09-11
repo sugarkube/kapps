@@ -18,49 +18,140 @@ AWS=os.getenv("AWS", "aws")       # path to the AWS CLI binary
 CFSSL=os.getenv("CFSSL", "cfssl")       # path to the cfssl binary
 CFSSL_JSON=os.getenv("CFSSL_JSON", "cfssljson")       # path to the cfssljson binary
 
+INSTALL="install"
+DELETE="delete"
+
 CLIENT="client"
 SERVER="server"
 
 def main():
     parser = argparse.ArgumentParser(description='Creates/updates hosted zones for kops.')
+    parser.add_argument(dest='mode', choices=[INSTALL, DELETE], help='Mode to run in')
     parser.add_argument(dest='cluster_name', help='Name of the cluster')
+    parser.add_argument(dest='vpc_name', help='Name of the VPC to create an endpoint for')
     parser.add_argument('--hostnames', help='Common names to set in the client & server certificates (comma-separated)', default="")
     parser.add_argument('--out-dir', help='Path to the directory to write files to', default='../cfssl/_generated_certs')
+    parser.add_argument('--ovpn-out-dir', help='Directory to write the OVPN file to', default='~/Downloads')
     parser.add_argument('--cert-json', help='Path to a cfssl JSON file', default='../cfssl/cert.json')
 
     args = parser.parse_args()
 
     cluster_name = args.cluster_name
 
+    try:
+        if args.mode == INSTALL:
+            install(args=args, cluster_name=cluster_name)
+        else:
+            delete(args=args,
+                   cluster_name=cluster_name,
+                   vpc_name=args.vpc_name)
+    except Exception as e:
+        logging.fatal("An error occurred: %s", e)
+        return 1
+
+
+def delete(args, cluster_name, vpc_name):
+    """
+    Delete a VPN endpoint. If it doesn't exist, do nothing.
+    :param args:
+    """
+    vpc_id = _get_vpc_by_name(vpc_name)
+    if not vpc_id:
+        print("VPC '%s' not found. Nothing to do." % vpc_name)
+        # don't raise an exception, just return
+        return
+
+    # todo - dissocate the endpoint from subnets
+
+    # todo - delete the VPN
+
+    # todo - delete the certs
+
+
+def install(args, cluster_name):
+    """
+    Create a VPN endpoint if it doesn't exist (if it does, do nothing)
+    :param args:
+    """
     out_dir = args.out_dir
     out_dir = os.path.abspath(out_dir)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    generate_certs(cluster_name=cluster_name,
-                   cert_json=args.cert_json,
-                   out_dir=out_dir,
-                   hostnames=args.hostnames)
+    vpc_id = _get_vpc_by_name(args.vpc_name)
+    if not vpc_id:
+        # this is an error case
+        raise RuntimeException("Error: VPC '%s' not found" % args.vpc_name)
 
-    cert_arns = import_certs(out_dir=out_dir,
-                             cluster_name=cluster_name)
-
-    endpoint_id = create_vpn_endpoint(cert_arns=cert_arns,
-                                      cluster_name=cluster_name)
-
-    # todo - associate the endpoint with the private subnets
-
-    cert_path = os.path.join(out_dir, "%s.pem" % CLIENT)
-    key_path = os.path.join(out_dir, "%s-key.pem" % CLIENT)
-
-    export_config_file(endpoint_id=endpoint_id,
-                       cluster_name=cluster_name,
-                       cert_path=cert_path,
-                       key_path=key_path,
-                       output_dir="~/Downloads")
+    vpn_endpoint_id = _get_vpn_endpoint(vpc_id=vpc_id,
+                                        cluster_name=cluster_name)
 
 
-def export_config_file(endpoint_id, cluster_name, cert_path, key_path, output_dir):
+    if vpn_endpoint_id:
+        print("A VPN endpoint with ID '%s' already exists for VPC '%s'" % (vpn_endpoint_id, vpc_id))
+    else:         # if it doesn't exist, create it and export the config
+        print("No VPN endpoint with ID '%s' exists for VPC '%s'. Will create it..." % (
+            vpn_endpoint_id, vpc_id))
+
+        _generate_certs(cluster_name=cluster_name,
+                        cert_json=args.cert_json,
+                        out_dir=out_dir,
+                        hostnames=args.hostnames)
+
+        cert_arns = _import_certs(out_dir=out_dir,
+                                  cluster_name=cluster_name)
+
+        vpn_endpoint_id = _create_vpn_endpoint(cert_arns=cert_arns,
+                                           cluster_name=cluster_name)
+
+        # todo - associate the endpoint with the private subnets
+
+        cert_path = os.path.join(out_dir, "%s.pem" % CLIENT)
+        key_path = os.path.join(out_dir, "%s-key.pem" % CLIENT)
+
+        _export_config_file(endpoint_id=vpn_endpoint_id,
+                            cluster_name=cluster_name,
+                            cert_path=cert_path,
+                            key_path=key_path,
+                            output_dir=os.path.abspath(args.ovpn_out_dir))
+
+
+def _get_vpn_endpoint(vpc_id, cluster_name):
+    """
+    Returns the ID of a VPN endpoint if it exists
+    :param vpc_id:
+    :param cluster_name:
+    :return: ID of the VPN endpoint if it exists
+    """
+    pass
+
+
+def _get_vpc_by_name(vpc_name):
+    """
+    Returns the ID of a VPC by name
+    :param vpc_name:
+    :return: VPC ID
+    """
+    logging.info("Searching for VPC '%s'" % vpc_name)
+    result = subprocess.run(args=[AWS, '--output', 'text', 'ec2', 'describe-vpcs',
+                                  '--filters', 'Name=tag:Name,Values=%s' % vpc_name,
+                                  '--query', 'Vpcs[*].VpcId | [0]'],
+                            capture_output=True)
+    logging.debug('result=%s' % result)
+
+    if not result.returncode == 0:
+        raise RuntimeError("Failed to get VPC '%s': %s" % (vpc_name, result))
+
+    result = result.stdout.decode("utf-8").strip()
+    if result == 'None':
+        result = None
+
+    logging.debug("Returning result '%s'" % result)
+
+    return result
+
+
+def _export_config_file(endpoint_id, cluster_name, cert_path, key_path, output_dir):
     """
     Exports the OpenVPN config file and modifies it
     :param endpoint_id: AWS endpoint ID
@@ -113,7 +204,7 @@ def export_config_file(endpoint_id, cluster_name, cert_path, key_path, output_di
     return dest_path
 
 
-def create_vpn_endpoint(cert_arns, cluster_name):
+def _create_vpn_endpoint(cert_arns, cluster_name):
     """
     Returns the endpoint ID
     :param cert_arns:
@@ -137,7 +228,7 @@ def create_vpn_endpoint(cert_arns, cluster_name):
     logging.info("Got output: %s" % result)
 
 
-def import_certs(out_dir, cluster_name):
+def _import_certs(out_dir, cluster_name):
     """
     Imports certs into AWS using the CLI. We don't use terraform because it doesn't support adding tags to certs and
     we should do that
@@ -167,7 +258,7 @@ def import_certs(out_dir, cluster_name):
     return arns
 
 
-def generate_certs(cluster_name, cert_json, out_dir, hostnames=""):
+def _generate_certs(cluster_name, cert_json, out_dir, hostnames=""):
     """
     Generates certs & keys for a CA, client and server
     :param cluster_name: Single word name of the cluster (for namespacing)
