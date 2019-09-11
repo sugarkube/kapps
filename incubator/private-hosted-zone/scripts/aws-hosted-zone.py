@@ -184,7 +184,7 @@ def _get_vpc_by_name(vpc_name):
     logging.debug('result=%s' % result)
 
     if not result.returncode == 0:
-        raise RuntimeError("Failed to create VPC '%s': %s" % (vpc_name, result))
+        raise RuntimeError("Failed to get VPC '%s': %s" % (vpc_name, result))
 
     result = result.stdout.decode("utf-8").strip()
     if result == 'None':
