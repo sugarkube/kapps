@@ -3,13 +3,13 @@
 # This script creates a VPN Endpoint (generating all required certificates) and downloads an OpenVPN config file to
 # access the endpoint.
 #
+# For the process, see https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/cvpn-getting-started.html
+#
 
 import argparse
 import subprocess
 import sys
 import logging
-import json
-import tempfile
 import os
 
 logging.basicConfig(level=logging.DEBUG)
@@ -45,11 +45,81 @@ def main():
     cert_arns = import_certs(out_dir=out_dir,
                              cluster_name=cluster_name)
 
-    create_vpn_endpoint(cert_arns=cert_arns,
-                        cluster_name=cluster_name)
+    endpoint_id = create_vpn_endpoint(cert_arns=cert_arns,
+                                      cluster_name=cluster_name)
+
+    # todo - associate the endpoint with the private subnets
+
+    cert_path = os.path.join(out_dir, "%s.pem" % CLIENT)
+    key_path = os.path.join(out_dir, "%s-key.pem" % CLIENT)
+
+    export_config_file(endpoint_id=endpoint_id,
+                       cluster_name=cluster_name,
+                       cert_path=cert_path,
+                       key_path=key_path,
+                       output_dir="~/Downloads")
+
+
+def export_config_file(endpoint_id, cluster_name, cert_path, key_path, output_dir):
+    """
+    Exports the OpenVPN config file and modifies it
+    :param endpoint_id: AWS endpoint ID
+    :param cluster_name: Name of the cluster
+    :param cert_path: Path to the client certificate
+    :param key_path: Path to the client private key
+    :return: Path to the written output file
+    """
+    dest_path = os.path.join(output_dir, "%s-vpn.ovpn" % cluster_name)
+
+    if os.path.exists(dest_path):
+        print("Config file already downloaded")
+        return dest_path
+
+    print("Exporting client config file")
+    command = '%s ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id %s --output text' % (
+        AWS, endpoint_id)
+    logging.info("Executing command: %s" % command)
+    result = subprocess.run(command, shell=True, check=True, capture_output=True)
+    logging.info("Got output: %s" % result)
+    config = result.stdout.decode("utf-8").strip()
+
+    # append the cert and key
+    with open(cert_path) as f:
+        cert = f.read()
+
+    with open(key_path) as f:
+        key = f.read()
+
+    config = """
+%s
+
+<cert>
+%s
+</cert>
+
+<key>
+%s
+</key>    
+""" % (config, cert, key)
+
+    # prepend a string to the DNS name
+    config = config.replace('remote ', 'remote blah99.')
+
+    print("Writing downloaded (and modified) config file to %s" % dest_path)
+
+    with open(dest_path, 'w') as f:
+        f.write(config)
+
+    return dest_path
 
 
 def create_vpn_endpoint(cert_arns, cluster_name):
+    """
+    Returns the endpoint ID
+    :param cert_arns:
+    :param cluster_name:
+    :return:
+    """
     print("Creating VPN endpoint...")
     command = '%s ec2 create-client-vpn-endpoint --client-cidr-block %s --server-certificate-arn %s ' \
               '--authentication-options %s --connection-log-options Enabled=false --dns-servers %s ' \
