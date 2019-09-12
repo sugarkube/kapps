@@ -67,6 +67,20 @@ def delete(args, cluster_name, vpc_name):
     # todo - delete the VPN
 
     # todo - delete the certs
+    cert_arns = _get_certs(cluster_name=cluster_name)
+    for cert_arn in cert_arns.values():
+        _delete_cert(cert_arn)
+
+
+def _delete_cert(cert_arn):
+    """
+    Deletes a certificate from ACM
+    :param cert_arn: ARN of the cert to delete
+    """
+    command = '%s acm delete-certificate --certificate-arn=%s' % (AWS, cert_arn)
+    logging.info("Executing command: %s" % command)
+    result = subprocess.run(command, shell=True, check=True)
+    logging.info("Got output: %s" % result)
 
 
 def install(args, cluster_name):
@@ -126,8 +140,12 @@ def install(args, cluster_name):
             cert_arns = _import_certs(out_dir=out_dir,
                                       cluster_name=cluster_name)
 
+        # get details of the VPC's CIDR range and subnets
+        vpc_details = _describe_vpc(vpc_id=vpc_id)
+
         vpn_endpoint_id = _create_vpn_endpoint(cert_arns=cert_arns,
-                                               cluster_name=cluster_name)
+                                               cluster_name=cluster_name,
+                                               vpc_details=vpc_details)
 
         # todo - associate the endpoint with the private subnets
 
@@ -141,6 +159,22 @@ def install(args, cluster_name):
                             output_dir=os.path.abspath(args.ovpn_out_dir))
 
 
+def _describe_vpc(vpc_id):
+    """
+    Returns details of the VPC's CIDR range and subnets
+    :param vpc_id:
+    :return: map
+    """
+    command = '%s ec2 describe-vpcs --vpc-ids=%s' % (AWS, vpc_id)
+    logging.info("Executing command: %s" % command)
+    result = subprocess.run(command, shell=True, check=True, capture_output=True)
+    logging.info("Got output: %s" % result)
+    response = json.loads(result.stdout.decode("utf-8").strip())
+    vpc_data = response["Vpcs"][0]
+    logging.info("Description of VPC '%s': %s" % (vpc_id, vpc_data))
+    return vpc_data
+
+
 def _get_vpn_endpoint(vpc_id, cluster_name):
     """
     Returns the ID of a VPN endpoint if it exists
@@ -148,8 +182,8 @@ def _get_vpn_endpoint(vpc_id, cluster_name):
     :param cluster_name:
     :return: ID of the VPN endpoint if it exists
     """
-    pass
-
+    command = '%s ec2 describe-client-vpn-endpoints ' % (AWS)
+    # todo - finish
 
 def _get_vpc_by_name(vpc_name):
     """
@@ -229,23 +263,36 @@ def _export_config_file(endpoint_id, cluster_name, cert_path, key_path, output_d
     return dest_path
 
 
-def _create_vpn_endpoint(cert_arns, cluster_name):
+def _create_vpn_endpoint(cert_arns, cluster_name, vpc_details):
     """
     Returns the endpoint ID
     :param cert_arns:
     :param cluster_name:
+    :param vpc_details: A map of VPC data as returned by describe-vpcs
     :return:
     """
     print("Creating VPN endpoint...")
+
+    cidr_block = vpc_details['CidrBlock']
+
+    # naively calculate the default nameserver address (2 above the base of the CIDR block)
+    cidr_parts = cidr_block.split('/')
+    ip = cidr_parts[0]
+    ip_parts = ip.split('.')
+    ip_parts[3] = int(ip_parts[3]) + 2
+    ns_ip = '.'.join(ip_parts)
+
+    logging.info("Default nameserver IP for CIDR '%s' is '%s'" % (cidr_block, ns_ip))
+
     command = '%s ec2 create-client-vpn-endpoint --client-cidr-block %s --server-certificate-arn %s ' \
               '--authentication-options %s --connection-log-options Enabled=false --dns-servers %s ' \
               '--split-tunnel --description "%s" ' \
               '--tag-specifications \'ResourceType=client-vpn-endpoint,Tags=[{Key=Name,Value="%s"}]\'' % (
         AWS,
-        '172.20.0.0/16',                # todo - grab the correct CIDR range for the VPC
+        cidr_block,
         cert_arns[SERVER],
         'Type=certificate-authentication,MutualAuthentication={ClientRootCertificateChainArn=%s}' % cert_arns[CLIENT],
-        '172.20.0.2',                   # todo - grab the correct CIDR range for the VPC
+        ns_ip,
         "%s VPN" % cluster_name,
         "%s VPN" % cluster_name)
     logging.info("Executing command: %s" % command)
