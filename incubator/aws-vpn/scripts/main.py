@@ -170,58 +170,54 @@ def install(args, cluster_name):
 
     print("VPC '%s' has ID '%s'" % (vpc_name, vpc_id))
 
+    cert_arns = _get_certs(cluster_name=cluster_name)
+
+    if len(cert_arns) == 1:
+        raise RuntimeError("Only a single imported cert could be found")
+    elif len(cert_arns) == 2:
+        print("Certs already exist")
+
+        # make sure that we have the cert and private key on disk or we won't be able to modify the config file
+        required_paths = [
+            os.path.join(out_dir, "%s.pem" % CLIENT),
+            os.path.join(out_dir, "%s-key.pem" % CLIENT),
+        ]
+
+        for path in required_paths:
+            if not os.path.exists(path):
+                raise RuntimeError("Certs have already been imported but the local files don't exist. "
+                                   "We need: %s" % ', '.join(required_paths))
+
+    else:
+        print("No certs exist. Will create and import them...")
+
+        _generate_certs(cluster_name=cluster_name,
+                        cert_json=args.cert_json,
+                        out_dir=out_dir,
+                        hostnames=args.hostnames)
+
+        cert_arns = _import_certs(out_dir=out_dir,
+                                  cluster_name=cluster_name)
+
+    # get details of the VPC's CIDR range and subnets
+    vpc_details = _describe_vpc(vpc_id=vpc_id)
+
     vpn_endpoint_id = _get_vpn_endpoint(cluster_name=cluster_name)
 
-    if vpn_endpoint_id:
-        print("A VPN endpoint with ID '%s' already exists for VPC '%s'" % (vpn_endpoint_id, vpc_id))
-    else:         # if it doesn't exist, create it and export the config
-        print("No VPN endpoint exists for VPC '%s'. Will create it..." % (vpc_id))
-
-        cert_arns = _get_certs(cluster_name=cluster_name)
-
-        if len(cert_arns) == 1:
-            raise RuntimeError("Only a single imported cert could be found")
-        elif len(cert_arns) == 2:
-            print("Certs already exist")
-
-            # make sure that we have the cert and private key on disk or we won't be able to modify the config file
-            required_paths = [
-                os.path.join(out_dir, "%s.pem" % CLIENT),
-                os.path.join(out_dir, "%s-key.pem" % CLIENT),
-            ]
-
-            for path in required_paths:
-                if not os.path.exists(path):
-                    raise RuntimeError("Certs have already been imported but the local files don't exist. "
-                                       "We need: %s" % ', '.join(required_paths))
-
-        else:
-            print("No certs exist. Will create and import them...")
-
-            _generate_certs(cluster_name=cluster_name,
-                            cert_json=args.cert_json,
-                            out_dir=out_dir,
-                            hostnames=args.hostnames)
-
-            cert_arns = _import_certs(out_dir=out_dir,
-                                      cluster_name=cluster_name)
-
-        # get details of the VPC's CIDR range and subnets
-        vpc_details = _describe_vpc(vpc_id=vpc_id)
-
+    if not vpn_endpoint_id:
         vpn_endpoint_id = _create_vpn_endpoint(cert_arns=cert_arns,
                                                cluster_name=cluster_name,
                                                vpc_details=vpc_details)
 
-        # associate the endpoint with the private subnets
-        _associate_endpoint_with_subnets(vpn_endpoint_id=vpn_endpoint_id,
-                                         vpc_details=vpc_details)
+    # associate the endpoint with the private subnets
+    _associate_endpoint_with_subnets(vpn_endpoint_id=vpn_endpoint_id,
+                                     vpc_details=vpc_details)
 
-        # authorise ingress
-        _authorise_ingress(vpn_endpoint_id=vpn_endpoint_id, cidr="0.0.0.0/0")
+    # authorise ingress
+    _authorise_ingress(vpn_endpoint_id=vpn_endpoint_id, cidr="0.0.0.0/0")
 
-        # create a route for 0/0
-        _create_vpn_route(vpn_endpoint_id=vpn_endpoint_id, cidr='0.0.0.0/0')
+    # create a route for 0/0
+    _create_vpn_route(vpn_endpoint_id=vpn_endpoint_id, cidr='0.0.0.0/0')
 
     cert_path = os.path.join(out_dir, "%s.pem" % CLIENT)
     key_path = os.path.join(out_dir, "%s-key.pem" % CLIENT)
@@ -300,7 +296,7 @@ def _create_vpn_route(vpn_endpoint_id, cidr):
 
     command = '%s ec2 create-client-vpn-route --client-vpn-endpoint-id=%s ' \
               '--destination-cidr-block=%s ' \
-              '--target-vpc-subnet-id=%s' \
+              '--target-vpc-subnet-id=%s ' \
               '--description=Internet' % (AWS, vpn_endpoint_id, cidr, subnet_ids[0])
     logging.info("Executing command: %s" % command)
     subprocess.run(command, shell=True, check=True)
@@ -321,7 +317,7 @@ def _authorise_ingress(vpn_endpoint_id, cidr):
 
     print("Permitting ingress to VPN '%s'" % vpn_endpoint_id)
     command = '%s ec2 authorize-client-vpn-ingress --client-vpn-endpoint-id=%s ' \
-              '--target-network-cidr=%s --authorize-all-groups=true ' \
+              '--target-network-cidr=%s --authorize-all-groups ' \
               '--description "Permit all"' % (AWS, vpn_endpoint_id, cidr)
     logging.info("Executing command: %s" % command)
     subprocess.run(command, shell=True, check=True)
@@ -338,8 +334,8 @@ def _associate_endpoint_with_subnets(vpn_endpoint_id, vpc_details):
     seen_azs = []
     subnet_ids = []
 
-    associations = _get_subnet_associations(vpn_endpoint_id=vpn_endpoint_id)
-    subnet_ids = [x['TargetNetworkId'] for x in associations]
+    existing_associations = _get_subnet_associations(vpn_endpoint_id=vpn_endpoint_id)
+    associated_subnet_ids = [x['TargetNetworkId'] for x in existing_associations]
 
     for subnet in vpc_details['Subnets']:
         az = subnet['AvailabilityZone']
@@ -350,7 +346,7 @@ def _associate_endpoint_with_subnets(vpn_endpoint_id, vpc_details):
 
         seen_azs.append(az)
 
-        if subnet_id in assocations:
+        if subnet_id in associated_subnet_ids:
             continue
 
         subnet_ids.append(subnet_id)
@@ -444,10 +440,6 @@ def _export_config_file(endpoint_id, cluster_name, cert_path, key_path, output_d
     :return: Path to the written output file
     """
     dest_path = os.path.join(output_dir, "%s-vpn.ovpn" % cluster_name)
-
-    if os.path.exists(dest_path):
-        print("Config file already downloaded")
-        return dest_path
 
     print("Exporting client config file")
     command = '%s ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id %s --output text' % (
