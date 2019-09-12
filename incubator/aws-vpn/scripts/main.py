@@ -67,11 +67,16 @@ def delete(args, cluster_name, vpc_name):
 
     if vpn_endpoint_id:
         pass
+        # delete the 0/0 entry from the routing table
+        _delete_vpn_route(vpn_endpoint_id=vpn_endpoint_id, cidr='0.0.0.0/0')
+
+        # todo - delete the authorisation
+
         # todo - dissocate the endpoint from subnets
 
         # todo - delete the VPN
 
-    # todo - delete the certs
+    # delete the certs
     cert_arns = _get_certs(cluster_name=cluster_name)
     for cert_arn in cert_arns.values():
         _delete_cert(cert_arn)
@@ -150,8 +155,6 @@ def install(args, cluster_name):
                                                cluster_name=cluster_name,
                                                vpc_details=vpc_details)
 
-        # todo - see if the endpoint is already associated with the subnets
-
         # associate the endpoint with the private subnets
         _associate_endpoint_with_subnets(vpn_endpoint_id=vpn_endpoint_id,
                                          vpc_details=vpc_details)
@@ -160,7 +163,7 @@ def install(args, cluster_name):
         _authorise_ingress(vpn_endpoint_id=vpn_endpoint_id)
 
         # create a route for 0/0
-        _create_vpn_route(vpn_endpoint_id=vpn_endpoint_id)
+        _create_vpn_route(vpn_endpoint_id=vpn_endpoint_id, cidr='0.0.0.0/0')
 
     cert_path = os.path.join(out_dir, "%s.pem" % CLIENT)
     key_path = os.path.join(out_dir, "%s-key.pem" % CLIENT)
@@ -172,6 +175,38 @@ def install(args, cluster_name):
                         output_dir=os.path.abspath(os.path.expanduser(args.ovpn_out_dir)))
 
 
+def _delete_vpn_route(vpn_endpoint_id, cidr):
+    """
+    Delete's a VPN route
+    :param vpn_endpoint_id:
+    :param cidr:
+    :return:
+    """
+    routes = _get_vpn_routes(vpn_endpoint_id=vpn_endpoint_id)
+
+    for route in routes:
+        if route['DestinationCidr'] == cidr:
+            command = '%s ec2 delete-client-vpn-route --client-vpn-endpoint-id=%s ' \
+                      '--target-vpc-subnet-id=%s --destination-cidr-block=%s' % (
+                AWS, vpn_endpoint_id, route['TargetSubnet'], cidr)
+            logging.info("Executing command: %s" % command)
+            subprocess.run(command, shell=True, check=True)
+
+
+def _get_vpn_routes(vpn_endpoint_id):
+    """
+    Returns a list of VPN routes associated with the VPN endpoint
+    :param vpn_endpoint_id:
+    :return: list
+    """
+    command = '%s ec2 describe-client-vpn-routes --client-vpn-endpoint-id=%s' % (AWS, vpn_endpoint_id)
+    logging.info("Executing command: %s" % command)
+    result = subprocess.run(command, shell=True, check=True, capture_output=True)
+    logging.info("Got output: %s" % result)
+    response = json.loads(result.stdout.decode("utf-8").strip())
+    return response['Routes']
+
+
 def _get_subnet_associations(vpn_endpoint_id):
     """
     Returns a list of subnets associated with the VPN
@@ -179,6 +214,7 @@ def _get_subnet_associations(vpn_endpoint_id):
     :return: list
     """
     command = '%s ec2 describe-client-vpn-target-networks --client-vpn-endpoint-id=%s' % (AWS, vpn_endpoint_id)
+    logging.info("Executing command: %s" % command)
     result = subprocess.run(command, shell=True, check=True, capture_output=True)
     logging.info("Got output: %s" % result)
     response = json.loads(result.stdout.decode("utf-8").strip())
@@ -186,12 +222,19 @@ def _get_subnet_associations(vpn_endpoint_id):
     return [x['TargetNetworkId'] for x in response['ClientVpnTargetNetworks']]
 
 
-def _create_vpn_route(vpn_endpoint_id, cidr='0.0.0.0/0'):
+def _create_vpn_route(vpn_endpoint_id, cidr):
     """
-    Creates an entry in the VPN routing table
+    Creates an entry in the VPN routing table if it doesn't exist
     :param vpn_endpoint_id: ID of the VPN to create the entry for
     :param cidr: CIDR block to create a route for
     """
+    routes = _get_vpn_routes(vpn_endpoint_id=vpn_endpoint_id)
+
+    for route in routes:
+        if route['DestinationCidr'] == cidr:
+            print("VPN '%s' already has a route for '%s'" % (vpn_endpoint_id, cidr))
+            return
+
     subnet_ids = _get_subnet_associations(vpn_endpoint_id=vpn_endpoint_id)
     if len(subnet_ids) == 0:
         raise RuntimeError("No subnets associated with VPN '%s'" % vpn_endpoint_id)
@@ -200,6 +243,7 @@ def _create_vpn_route(vpn_endpoint_id, cidr='0.0.0.0/0'):
               '--destination-cidr-block=%s ' \
               '--target-vpc-subnet-id=%s' \
               '--description=Internet' % (AWS, vpn_endpoint_id, cidr, subnet_ids[0])
+    logging.info("Executing command: %s" % command)
     subprocess.run(command, shell=True, check=True)
 
 
@@ -212,6 +256,7 @@ def _authorise_ingress(vpn_endpoint_id):
     command = '%s ec2 authorize-client-vpn-ingress --client-vpn-endpoint-id=%s ' \
               '--target-network-cidr=0.0.0.0/0 --authorize-all-groups=true ' \
               '--description "Permit all"' % (AWS, vpn_endpoint_id)
+    logging.info("Executing command: %s" % command)
     subprocess.run(command, shell=True, check=True)
 
 
@@ -226,13 +271,21 @@ def _associate_endpoint_with_subnets(vpn_endpoint_id, vpc_details):
     seen_azs = []
     subnet_ids = []
 
+    assocations = _get_subnet_associations(vpn_endpoint_id=vpn_endpoint_id)
+
     for subnet in vpc_details['Subnets']:
         az = subnet['AvailabilityZone']
         if az in seen_azs:
             continue
 
+        subnet_id = subnet['SubnetId']
+
         seen_azs.append(az)
-        subnet_ids.append(subnet['SubnetId'])
+
+        if subnet_id in assocations:
+            continue
+
+        subnet_ids.append(subnet_id)
 
     for subnet_id in subnet_ids:
         command = '%s ec2 associate-client-vpn-target-network --client-vpn-endpoint-id=%s --subnet-id=%s' % (
