@@ -76,12 +76,23 @@ def delete(args, cluster_name, vpc_name):
         # dissocate the endpoint from subnets
         _dissociate_endpoint_from_subnets(vpn_endpoint_id=vpn_endpoint_id)
 
-        # todo - delete the VPN
+        # delete the VPN
+        _delete_vpn_endpoint(vpn_endpoint_id=vpn_endpoint_id)
 
     # delete the certs
     cert_arns = _get_certs(cluster_name=cluster_name)
     for cert_arn in cert_arns.values():
         _delete_cert(cert_arn)
+
+
+def _delete_vpn_endpoint(vpn_endpoint_id):
+    """
+    Delete's a VPN endpoint
+    :param vpn_endpoint_id:
+    """
+    command = '%s ec2 delete-client-vpn-endpoint --client-vpn-endpoint-id=%s' % (AWS, vpn_endpoint_id)
+    logging.info("Executing command: %s" % command)
+    subprocess.run(command, shell=True)
 
 
 def _dissociate_endpoint_from_subnets(vpn_endpoint_id):
