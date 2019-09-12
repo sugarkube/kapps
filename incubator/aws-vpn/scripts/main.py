@@ -156,9 +156,11 @@ def install(args, cluster_name):
         _associate_endpoint_with_subnets(vpn_endpoint_id=vpn_endpoint_id,
                                          vpc_details=vpc_details)
 
-        # todo - probably create routes: aws ec2 create-client-vpn-route
+        # authorise ingress
+        _authorise_ingress(vpn_endpoint_id=vpn_endpoint_id)
 
-        # todo - possibly authorise ingresses: aws ec2 authorize-client-vpn-ingress
+        # create a route for 0/0
+        _create_vpn_route(vpn_endpoint_id=vpn_endpoint_id)
 
     cert_path = os.path.join(out_dir, "%s.pem" % CLIENT)
     key_path = os.path.join(out_dir, "%s-key.pem" % CLIENT)
@@ -168,6 +170,49 @@ def install(args, cluster_name):
                         cert_path=cert_path,
                         key_path=key_path,
                         output_dir=os.path.abspath(os.path.expanduser(args.ovpn_out_dir)))
+
+
+def _get_subnet_associations(vpn_endpoint_id):
+    """
+    Returns a list of subnets associated with the VPN
+    :param vpn_endpoint_id:
+    :return: list
+    """
+    command = '%s ec2 describe-client-vpn-target-networks --client-vpn-endpoint-id=%s' % (AWS, vpn_endpoint_id)
+    result = subprocess.run(command, shell=True, check=True, capture_output=True)
+    logging.info("Got output: %s" % result)
+    response = json.loads(result.stdout.decode("utf-8").strip())
+
+    return [x['TargetNetworkId'] for x in response['ClientVpnTargetNetworks']]
+
+
+def _create_vpn_route(vpn_endpoint_id, cidr='0.0.0.0/0'):
+    """
+    Creates an entry in the VPN routing table
+    :param vpn_endpoint_id: ID of the VPN to create the entry for
+    :param cidr: CIDR block to create a route for
+    """
+    subnet_ids = _get_subnet_associations(vpn_endpoint_id=vpn_endpoint_id)
+    if len(subnet_ids) == 0:
+        raise RuntimeError("No subnets associated with VPN '%s'" % vpn_endpoint_id)
+
+    command = '%s ec2 create-client-vpn-route --client-vpn-endpoint-id=%s ' \
+              '--destination-cidr-block=%s ' \
+              '--target-vpc-subnet-id=%s' \
+              '--description=Internet' % (AWS, vpn_endpoint_id, cidr, subnet_ids[0])
+    subprocess.run(command, shell=True, check=True)
+
+
+def _authorise_ingress(vpn_endpoint_id):
+    """
+    Permits ingress into the VPN from all users
+    :param vpn_endpoint_id:
+    """
+    print("Permitting ingress to VPN '%s'" % vpn_endpoint_id)
+    command = '%s ec2 authorize-client-vpn-ingress --client-vpn-endpoint-id=%s ' \
+              '--target-network-cidr=0.0.0.0/0 --authorize-all-groups=true ' \
+              '--description "Permit all"' % (AWS, vpn_endpoint_id)
+    subprocess.run(command, shell=True, check=True)
 
 
 def _associate_endpoint_with_subnets(vpn_endpoint_id, vpc_details):
@@ -314,7 +359,7 @@ def _export_config_file(endpoint_id, cluster_name, cert_path, key_path, output_d
     random_str = uuid.uuid4().hex[:12]
     config = config.replace('remote ', 'remote %s.' % random_str)
 
-    print("Writing downloaded (and modified) config file to %s" % dest_path)
+    print("OVPN config file written to: %s" % dest_path)
 
     with open(dest_path, 'w') as f:
         f.write(config)
