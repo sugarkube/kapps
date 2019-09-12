@@ -14,6 +14,7 @@ import sys
 import logging
 import os
 import json
+import time
 import uuid
 
 logging.basicConfig(level=logging.DEBUG)
@@ -442,7 +443,8 @@ def _export_config_file(endpoint_id, cluster_name, cert_path, key_path, output_d
     :param key_path: Path to the client private key
     :return: Path to the written output file
     """
-    dest_path = os.path.join(output_dir, "%s-vpn.ovpn" % cluster_name)
+    timestamp = int(time.time())
+    dest_path = os.path.join(output_dir, "%s-vpn-%d.ovpn" % (cluster_name, timestamp))
 
     print("Exporting client config file")
     command = '%s ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id %s --output text' % (
