@@ -11,6 +11,7 @@ import subprocess
 import sys
 import logging
 import os
+import json
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -29,7 +30,7 @@ def main():
     parser.add_argument(dest='mode', choices=[INSTALL, DELETE], help='Mode to run in')
     parser.add_argument(dest='cluster_name', help='Name of the cluster')
     parser.add_argument(dest='vpc_name', help='Name of the VPC to create an endpoint for')
-    parser.add_argument('--hostnames', help='Common names to set in the client & server certificates (comma-separated)', default="")
+    parser.add_argument(dest='hostnames', help='Common names to set in the client & server certificates (comma-separated)')
     parser.add_argument('--out-dir', help='Path to the directory to write files to', default='../cfssl/_generated_certs')
     parser.add_argument('--ovpn-out-dir', help='Directory to write the OVPN file to', default='~/Downloads')
     parser.add_argument('--cert-json', help='Path to a cfssl JSON file', default='../cfssl/cert.json')
@@ -78,10 +79,14 @@ def install(args, cluster_name):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    vpc_id = _get_vpc_by_name(args.vpc_name)
+    vpc_name = args.vpc_name
+
+    vpc_id = _get_vpc_by_name(vpc_name)
     if not vpc_id:
         # this is an error case
-        raise RuntimeException("Error: VPC '%s' not found" % args.vpc_name)
+        raise RuntimeError("Error: VPC '%s' not found" % args.vpc_name)
+
+    print("VPC '%s' has ID '%s'" % (vpc_name, vpc_id))
 
     vpn_endpoint_id = _get_vpn_endpoint(vpc_id=vpc_id,
                                         cluster_name=cluster_name)
@@ -90,19 +95,25 @@ def install(args, cluster_name):
     if vpn_endpoint_id:
         print("A VPN endpoint with ID '%s' already exists for VPC '%s'" % (vpn_endpoint_id, vpc_id))
     else:         # if it doesn't exist, create it and export the config
-        print("No VPN endpoint with ID '%s' exists for VPC '%s'. Will create it..." % (
-            vpn_endpoint_id, vpc_id))
+        print("No VPN endpoint exists for VPC '%s'. Will create it..." % (vpc_id))
 
-        _generate_certs(cluster_name=cluster_name,
-                        cert_json=args.cert_json,
-                        out_dir=out_dir,
-                        hostnames=args.hostnames)
+        cert_arns = _get_certs(cluster_name=cluster_name)
 
-        cert_arns = _import_certs(out_dir=out_dir,
-                                  cluster_name=cluster_name)
+        if cert_arns:
+            print("Certs already exist")
+        else:
+            print("No certs exist. Will create and import them...")
+
+            _generate_certs(cluster_name=cluster_name,
+                            cert_json=args.cert_json,
+                            out_dir=out_dir,
+                            hostnames=args.hostnames)
+
+            cert_arns = _import_certs(out_dir=out_dir,
+                                      cluster_name=cluster_name)
 
         vpn_endpoint_id = _create_vpn_endpoint(cert_arns=cert_arns,
-                                           cluster_name=cluster_name)
+                                               cluster_name=cluster_name)
 
         # todo - associate the endpoint with the private subnets
 
@@ -228,6 +239,64 @@ def _create_vpn_endpoint(cert_arns, cluster_name):
     logging.info("Got output: %s" % result)
 
 
+def _get_cert_name(cluster_name, actor):
+    """
+    Returns a tag name for a certificate
+    :param cluster_name: Cluster name
+    :param actor: e.g. client, server
+    :return: string
+    """
+    return '%s VPN %s cert' % (cluster_name, actor)
+
+
+def _get_certs(cluster_name):
+    """
+    Searches for VPN certs for the named cluster
+    :param cluster_name:
+    :return: a map of cert arns
+    """
+    arns = {}
+
+    logging.info("Searching for existing VPN certs for cluster '%s'" % cluster_name)
+
+    # tags we're looking for
+    server_tag_value = _get_cert_name(cluster_name=cluster_name, actor=SERVER)
+    client_tag_value = _get_cert_name(cluster_name=cluster_name, actor=CLIENT)
+
+    # first we need to list the certificates
+    command = '%s acm list-certificates' % AWS
+    logging.info("Executing command: %s" % command)
+    result = subprocess.run(command, shell=True, check=True, capture_output=True)
+    logging.info("Got output: %s" % result)
+    cert_json = result.stdout.decode("utf-8").strip()
+    certs = json.loads(cert_json)
+
+    # get the tags for each cert and try to match them up with either CLIENT or SERVER
+    for cert in certs['CertificateSummaryList']:
+        arn = cert['CertificateArn']
+        command = '%s acm list-tags-for-certificate --certificate-arn=%s' % (AWS, arn)
+        logging.info("Executing command: %s" % command)
+        result = subprocess.run(command, shell=True, check=True, capture_output=True)
+        logging.info("Got output: %s" % result)
+        tags = json.loads(result.stdout.decode("utf-8").strip())
+
+        for tag in tags['Tags']:
+            if tag['Key'] == 'Name':
+                if tag['Value'] == server_tag_value:
+                    arns[SERVER] = arn
+                    continue
+                elif tag['Value'] == client_tag_value:
+                    arns[CLIENT] = arn
+                    continue
+
+    if arns:
+        logging.info("Found existing cert arns: %s" % arns)
+    else:
+        logging.info("No existing certs found")
+
+    return arns
+
+
 def _import_certs(out_dir, cluster_name):
     """
     Imports certs into AWS using the CLI. We don't use terraform because it doesn't support adding tags to certs and
@@ -246,8 +315,9 @@ def _import_certs(out_dir, cluster_name):
         arns[actor] = result.stdout.decode("utf-8").strip()
 
         print("Tagging cert in AWS...")
-        command = '%s acm add-tags-to-certificate --certificate-arn=%s --tags=Key=Name,Value="%s VPN %s cert"' % (
-            AWS, arns[actor], cluster_name, actor)
+        tag_value = _get_cert_name(cluster_name=cluster_name, actor=actor)
+        command = '%s acm add-tags-to-certificate --certificate-arn=%s --tags=Key=Name,Value="%s"' % (
+            AWS, arns[actor], tag_value)
         subprocess.run(command, shell=True, check=True)
 
     print("Successfully imported and tagged certs: ")
