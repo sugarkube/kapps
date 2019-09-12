@@ -99,8 +99,22 @@ def install(args, cluster_name):
 
         cert_arns = _get_certs(cluster_name=cluster_name)
 
-        if cert_arns:
+        if len(cert_arns) == 1:
+            raise RuntimeError("Only a single imported cert could be found")
+        elif len(cert_arns) == 2:
             print("Certs already exist")
+
+            # make sure that we have the cert and private key on disk or we won't be able to modify the config file
+            required_paths = [
+                os.path.join(out_dir, "%s.pem" % CLIENT),
+                os.path.join(out_dir, "%s-key.pem" % CLIENT),
+            ]
+
+            for path in required_paths:
+                if not os.path.exists(path):
+                    raise RuntimeError("Certs have already been imported but the local files don't exist. "
+                                       "We need: %s" % ', '.join(required_paths))
+
         else:
             print("No certs exist. Will create and import them...")
 
@@ -237,6 +251,10 @@ def _create_vpn_endpoint(cert_arns, cluster_name):
     logging.info("Executing command: %s" % command)
     result = subprocess.run(command, shell=True, check=True, capture_output=True)
     logging.info("Got output: %s" % result)
+    response = json.loads(result.stdout.decode("utf-8").strip())
+    endpoint_id = response['ClientVpnEndpointId']
+    print("Created VPN Endpoint '%s'" % endpoint_id)
+    return endpoint_id
 
 
 def _get_cert_name(cluster_name, actor):
