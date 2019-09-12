@@ -84,6 +84,8 @@ def delete(args, cluster_name, vpc_name):
     for cert_arn in cert_arns.values():
         _delete_cert(cert_arn)
 
+    print("VPN for '%s' deleted" % cluster_name)
+
 
 def _delete_vpn_endpoint(vpn_endpoint_id):
     """
@@ -134,7 +136,7 @@ def _revoke_ingress_authorisation(vpn_endpoint_id, cidr):
     for auth in authorisations:
         if auth['DestinationCidr'] == cidr:
             command = '%s ec2 revoke-client-vpn-ingress --client-vpn-endpoint-id=%s ' \
-                      '--target-network-cidr=%s' % (AWS, vpn_endpoint_id, cidr)
+                      '--target-network-cidr=%s --revoke-all-groups' % (AWS, vpn_endpoint_id, cidr)
             logging.info("Executing command: %s" % command)
             subprocess.run(command, shell=True, check=True)
 
@@ -275,7 +277,7 @@ def _get_subnet_associations(vpn_endpoint_id):
     logging.info("Got output: %s" % result)
     response = json.loads(result.stdout.decode("utf-8").strip())
 
-    return [x['TargetNetworkId'] for x in response['ClientVpnTargetNetworks']]
+    return response['ClientVpnTargetNetworks']
 
 
 def _create_vpn_route(vpn_endpoint_id, cidr):
@@ -291,7 +293,8 @@ def _create_vpn_route(vpn_endpoint_id, cidr):
             print("VPN '%s' already has a route for '%s'" % (vpn_endpoint_id, cidr))
             return
 
-    subnet_ids = _get_subnet_associations(vpn_endpoint_id=vpn_endpoint_id)
+    associations = _get_subnet_associations(vpn_endpoint_id=vpn_endpoint_id)
+    subnet_ids = [x['TargetNetworkId'] for x in associations]
     if len(subnet_ids) == 0:
         raise RuntimeError("No subnets associated with VPN '%s'" % vpn_endpoint_id)
 
@@ -335,7 +338,8 @@ def _associate_endpoint_with_subnets(vpn_endpoint_id, vpc_details):
     seen_azs = []
     subnet_ids = []
 
-    assocations = _get_subnet_associations(vpn_endpoint_id=vpn_endpoint_id)
+    associations = _get_subnet_associations(vpn_endpoint_id=vpn_endpoint_id)
+    subnet_ids = [x['TargetNetworkId'] for x in associations]
 
     for subnet in vpc_details['Subnets']:
         az = subnet['AvailabilityZone']
