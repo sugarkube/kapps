@@ -73,7 +73,8 @@ def delete(args, cluster_name, vpc_name):
         # revoke the authorisation
         _revoke_ingress_authorisation(vpn_endpoint_id=vpn_endpoint_id, cidr="0.0.0.0/0")
 
-        # todo - dissocate the endpoint from subnets
+        # dissocate the endpoint from subnets
+        _dissociate_endpoint_from_subnets(vpn_endpoint_id=vpn_endpoint_id)
 
         # todo - delete the VPN
 
@@ -81,6 +82,20 @@ def delete(args, cluster_name, vpc_name):
     cert_arns = _get_certs(cluster_name=cluster_name)
     for cert_arn in cert_arns.values():
         _delete_cert(cert_arn)
+
+
+def _dissociate_endpoint_from_subnets(vpn_endpoint_id):
+    """
+    Deletes all subnet associations with the endpoint
+    :param vpn_endpoint_id:
+    """
+    associations = _get_subnet_associations(vpn_endpoint_id)
+
+    for association in associations:
+        command = '%s ec2 disassociate-client-vpn-target-network --client-vpn-endpoint-id=%s ' \
+                  '--association-id=%s' % (AWS, vpn_endpoint_id, association["AssociationId"])
+        logging.info("Executing command: %s" % command)
+        subprocess.run(command, shell=True)
 
 
 def _get_ingress_authorisations(vpn_endpoint_id):
