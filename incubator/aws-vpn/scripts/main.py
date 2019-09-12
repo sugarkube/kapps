@@ -12,6 +12,7 @@ import sys
 import logging
 import os
 import json
+import uuid
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -62,8 +63,7 @@ def delete(args, cluster_name, vpc_name):
         # don't raise an exception, just return
         return
 
-    vpn_endpoint_id = _get_vpn_endpoint(vpc_id=vpc_id,
-                                        cluster_name=cluster_name)
+    vpn_endpoint_id = _get_vpn_endpoint(cluster_name=cluster_name)
 
     if vpn_endpoint_id:
         pass
@@ -107,9 +107,7 @@ def install(args, cluster_name):
 
     print("VPC '%s' has ID '%s'" % (vpc_name, vpc_id))
 
-    vpn_endpoint_id = _get_vpn_endpoint(vpc_id=vpc_id,
-                                        cluster_name=cluster_name)
-
+    vpn_endpoint_id = _get_vpn_endpoint(cluster_name=cluster_name)
 
     if vpn_endpoint_id:
         print("A VPN endpoint with ID '%s' already exists for VPC '%s'" % (vpn_endpoint_id, vpc_id))
@@ -162,14 +160,14 @@ def install(args, cluster_name):
 
         # todo - possibly authorise ingresses: aws ec2 authorize-client-vpn-ingress
 
-        cert_path = os.path.join(out_dir, "%s.pem" % CLIENT)
-        key_path = os.path.join(out_dir, "%s-key.pem" % CLIENT)
+    cert_path = os.path.join(out_dir, "%s.pem" % CLIENT)
+    key_path = os.path.join(out_dir, "%s-key.pem" % CLIENT)
 
-        _export_config_file(endpoint_id=vpn_endpoint_id,
-                            cluster_name=cluster_name,
-                            cert_path=cert_path,
-                            key_path=key_path,
-                            output_dir=os.path.abspath(args.ovpn_out_dir))
+    _export_config_file(endpoint_id=vpn_endpoint_id,
+                        cluster_name=cluster_name,
+                        cert_path=cert_path,
+                        key_path=key_path,
+                        output_dir=os.path.abspath(os.path.expanduser(args.ovpn_out_dir)))
 
 
 def _associate_endpoint_with_subnets(vpn_endpoint_id, vpc_details):
@@ -178,8 +176,18 @@ def _associate_endpoint_with_subnets(vpn_endpoint_id, vpc_details):
     :param vpn_endpoint_id:
     :param vpc_details:
     """
-    # associate the VPN with all subnets
-    subnet_ids = [x['SubnetId'] for x in vpc_details['Subnets']]
+    # associate the VPN with subnets in different AZs (the VPN can't be associated with multiple
+    # subnets in the same AZ)
+    seen_azs = []
+    subnet_ids = []
+
+    for subnet in vpc_details['Subnets']:
+        az = subnet['AvailabilityZone']
+        if az in seen_azs:
+            continue
+
+        seen_azs.append(az)
+        subnet_ids.append(subnet['SubnetId'])
 
     for subnet_id in subnet_ids:
         command = '%s ec2 associate-client-vpn-target-network --client-vpn-endpoint-id=%s --subnet-id=%s' % (
@@ -214,15 +222,26 @@ def _describe_vpc(vpc_id):
     return vpc_data
 
 
-def _get_vpn_endpoint(vpc_id, cluster_name):
+def _get_vpn_endpoint(cluster_name):
     """
     Returns the ID of a VPN endpoint if it exists
-    :param vpc_id:
     :param cluster_name:
     :return: ID of the VPN endpoint if it exists
     """
-    command = '%s ec2 describe-client-vpn-endpoints ' % (AWS)
-    # todo - finish
+    # filtering is half-baked so we need to manually filter ourselves
+    command = '%s ec2 describe-client-vpn-endpoints' % (AWS)
+    logging.info("Executing command: %s" % command)
+    result = subprocess.run(command, shell=True, check=True, capture_output=True)
+    logging.info("Got output: %s" % result)
+    endpoints = json.loads(result.stdout.decode("utf-8").strip())
+
+    logging.info("Endpoint data is: %s", endpoints)
+
+    endpoint_name = _get_endpoint_name(cluster_name)
+
+    for endpoint in endpoints['ClientVpnEndpoints']:
+        if endpoint['Description'] == endpoint_name:
+            return endpoint['ClientVpnEndpointId']
 
 def _get_vpc_by_name(vpc_name):
     """
@@ -274,10 +293,10 @@ def _export_config_file(endpoint_id, cluster_name, cert_path, key_path, output_d
 
     # append the cert and key
     with open(cert_path) as f:
-        cert = f.read()
+        cert = f.read().strip()
 
     with open(key_path) as f:
-        key = f.read()
+        key = f.read().strip()
 
     config = """
 %s
@@ -292,7 +311,8 @@ def _export_config_file(endpoint_id, cluster_name, cert_path, key_path, output_d
 """ % (config, cert, key)
 
     # prepend a string to the DNS name
-    config = config.replace('remote ', 'remote blah99.')
+    random_str = uuid.uuid4().hex[:12]
+    config = config.replace('remote ', 'remote %s.' % random_str)
 
     print("Writing downloaded (and modified) config file to %s" % dest_path)
 
@@ -332,8 +352,8 @@ def _create_vpn_endpoint(cert_arns, cluster_name, vpc_details):
         cert_arns[SERVER],
         'Type=certificate-authentication,MutualAuthentication={ClientRootCertificateChainArn=%s}' % cert_arns[CLIENT],
         ns_ip,
-        "%s VPN" % cluster_name,
-        "%s VPN" % cluster_name)
+        _get_endpoint_name(cluster_name),
+        _get_endpoint_name(cluster_name))
     logging.info("Executing command: %s" % command)
     result = subprocess.run(command, shell=True, check=True, capture_output=True)
     logging.info("Got output: %s" % result)
@@ -351,6 +371,15 @@ def _get_cert_name(cluster_name, actor):
     :return: string
     """
     return '%s VPN %s cert' % (cluster_name, actor)
+
+
+def _get_endpoint_name(cluster_name):
+    """
+    Returns the name of a VPN for the given cluster
+    :param cluster_name: Cluster name
+    :return: string
+    """
+    return '%s VPN' % cluster_name
 
 
 def _get_certs(cluster_name):
