@@ -70,7 +70,8 @@ def delete(args, cluster_name, vpc_name):
         # delete the 0/0 entry from the routing table
         _delete_vpn_route(vpn_endpoint_id=vpn_endpoint_id, cidr='0.0.0.0/0')
 
-        # todo - delete the authorisation
+        # revoke the authorisation
+        _revoke_ingress_authorisation(vpn_endpoint_id=vpn_endpoint_id, cidr="0.0.0.0/0")
 
         # todo - dissocate the endpoint from subnets
 
@@ -82,6 +83,36 @@ def delete(args, cluster_name, vpc_name):
         _delete_cert(cert_arn)
 
 
+def _get_ingress_authorisations(vpn_endpoint_id):
+    """
+    Returns a list of VPN ingress authorisation rules
+    :param vpn_endpoint_id:
+    :return: list
+    """
+    command = '%s ec2 describe-client-vpn-authorization-rules --client-vpn-endpoint-id=%s' % (AWS, vpn_endpoint_id)
+    logging.info("Executing command: %s" % command)
+    result = subprocess.run(command, shell=True, check=True, capture_output=True)
+    logging.info("Got output: %s" % result)
+    response = json.loads(result.stdout.decode("utf-8").strip())
+    return response['AuthorizationRules']
+
+
+def _revoke_ingress_authorisation(vpn_endpoint_id, cidr):
+    """
+    Revokes a VPN ingress authorisation
+    :param vpn_endpoint_id:
+    :param cidr:
+    """
+    authorisations = _get_ingress_authorisations(vpn_endpoint_id)
+
+    for auth in authorisations:
+        if auth['DestinationCidr'] == cidr:
+            command = '%s ec2 revoke-client-vpn-ingress --client-vpn-endpoint-id=%s ' \
+                      '--target-network-cidr=%s' % (AWS, vpn_endpoint_id, cidr)
+            logging.info("Executing command: %s" % command)
+            subprocess.run(command, shell=True, check=True)
+
+
 def _delete_cert(cert_arn):
     """
     Deletes a certificate from ACM
@@ -89,8 +120,7 @@ def _delete_cert(cert_arn):
     """
     command = '%s acm delete-certificate --certificate-arn=%s' % (AWS, cert_arn)
     logging.info("Executing command: %s" % command)
-    result = subprocess.run(command, shell=True, check=True)
-    logging.info("Got output: %s" % result)
+    subprocess.run(command, shell=True, check=True)
 
 
 def install(args, cluster_name):
@@ -160,7 +190,7 @@ def install(args, cluster_name):
                                          vpc_details=vpc_details)
 
         # authorise ingress
-        _authorise_ingress(vpn_endpoint_id=vpn_endpoint_id)
+        _authorise_ingress(vpn_endpoint_id=vpn_endpoint_id, cidr="0.0.0.0/0")
 
         # create a route for 0/0
         _create_vpn_route(vpn_endpoint_id=vpn_endpoint_id, cidr='0.0.0.0/0')
@@ -247,15 +277,23 @@ def _create_vpn_route(vpn_endpoint_id, cidr):
     subprocess.run(command, shell=True, check=True)
 
 
-def _authorise_ingress(vpn_endpoint_id):
+def _authorise_ingress(vpn_endpoint_id, cidr):
     """
     Permits ingress into the VPN from all users
+    :param cidr:
     :param vpn_endpoint_id:
     """
+    authorisations = _get_ingress_authorisations(vpn_endpoint_id)
+
+    for auth in authorisations:
+        if auth['DestinationCidr'] == cidr:
+            print("VPN '%s' has already authorised CIDR '%s'" % (vpn_endpoint_id, cidr))
+            return
+
     print("Permitting ingress to VPN '%s'" % vpn_endpoint_id)
     command = '%s ec2 authorize-client-vpn-ingress --client-vpn-endpoint-id=%s ' \
-              '--target-network-cidr=0.0.0.0/0 --authorize-all-groups=true ' \
-              '--description "Permit all"' % (AWS, vpn_endpoint_id)
+              '--target-network-cidr=%s --authorize-all-groups=true ' \
+              '--description "Permit all"' % (AWS, vpn_endpoint_id, cidr)
     logging.info("Executing command: %s" % command)
     subprocess.run(command, shell=True, check=True)
 
