@@ -62,9 +62,14 @@ def delete(args, cluster_name, vpc_name):
         # don't raise an exception, just return
         return
 
-    # todo - dissocate the endpoint from subnets
+    vpn_endpoint_id = _get_vpn_endpoint(vpc_id=vpc_id,
+                                        cluster_name=cluster_name)
 
-    # todo - delete the VPN
+    if vpn_endpoint_id:
+        pass
+        # todo - dissocate the endpoint from subnets
+
+        # todo - delete the VPN
 
     # todo - delete the certs
     cert_arns = _get_certs(cluster_name=cluster_name)
@@ -165,6 +170,7 @@ def _describe_vpc(vpc_id):
     :param vpc_id:
     :return: map
     """
+    print("Describing VPC '%s'" % vpc_id)
     command = '%s ec2 describe-vpcs --vpc-ids=%s' % (AWS, vpc_id)
     logging.info("Executing command: %s" % command)
     result = subprocess.run(command, shell=True, check=True, capture_output=True)
@@ -172,6 +178,15 @@ def _describe_vpc(vpc_id):
     response = json.loads(result.stdout.decode("utf-8").strip())
     vpc_data = response["Vpcs"][0]
     logging.info("Description of VPC '%s': %s" % (vpc_id, vpc_data))
+
+    print("Describing subnets for VPC '%s'" % vpc_id)
+    command = '%s ec2 describe-subnets --filters=Name=vpc-id,Values=%s' % (AWS, vpc_id)
+    logging.info("Executing command: %s" % command)
+    result = subprocess.run(command, shell=True, check=True, capture_output=True)
+    logging.info("Got output: %s" % result)
+    response = json.loads(result.stdout.decode("utf-8").strip())
+    vpc_data['Subnets'] = response['Subnets']
+
     return vpc_data
 
 
