@@ -47,7 +47,7 @@ def main():
                    cluster_name=cluster_name,
                    vpc_name=args.vpc_name)
     except Exception as e:
-        logging.fatal("An error occurred: %s", e)
+        logging.exception("An error occurred: %s", e)
         return 1
 
 
@@ -152,7 +152,15 @@ def install(args, cluster_name):
                                                cluster_name=cluster_name,
                                                vpc_details=vpc_details)
 
-        # todo - associate the endpoint with the private subnets
+        # todo - see if the endpoint is already associated with the subnets
+
+        # associate the endpoint with the private subnets
+        _associate_endpoint_with_subnets(vpn_endpoint_id=vpn_endpoint_id,
+                                         vpc_details=vpc_details)
+
+        # todo - probably create routes: aws ec2 create-client-vpn-route
+
+        # todo - possibly authorise ingresses: aws ec2 authorize-client-vpn-ingress
 
         cert_path = os.path.join(out_dir, "%s.pem" % CLIENT)
         key_path = os.path.join(out_dir, "%s-key.pem" % CLIENT)
@@ -162,6 +170,22 @@ def install(args, cluster_name):
                             cert_path=cert_path,
                             key_path=key_path,
                             output_dir=os.path.abspath(args.ovpn_out_dir))
+
+
+def _associate_endpoint_with_subnets(vpn_endpoint_id, vpc_details):
+    """
+    Associate a VPN endpoint with private subnets
+    :param vpn_endpoint_id:
+    :param vpc_details:
+    """
+    # associate the VPN with all subnets
+    subnet_ids = [x['SubnetId'] for x in vpc_details['Subnets']]
+
+    for subnet_id in subnet_ids:
+        command = '%s ec2 associate-client-vpn-target-network --client-vpn-endpoint-id=%s --subnet-id=%s' % (
+            AWS, vpn_endpoint_id, subnet_id)
+        logging.info("Executing command: %s" % command)
+        subprocess.run(command, shell=True, check=True)
 
 
 def _describe_vpc(vpc_id):
@@ -294,17 +318,17 @@ def _create_vpn_endpoint(cert_arns, cluster_name, vpc_details):
     cidr_parts = cidr_block.split('/')
     ip = cidr_parts[0]
     ip_parts = ip.split('.')
-    ip_parts[3] = int(ip_parts[3]) + 2
+    ip_parts[3] = str(int(ip_parts[3]) + 2)
     ns_ip = '.'.join(ip_parts)
 
     logging.info("Default nameserver IP for CIDR '%s' is '%s'" % (cidr_block, ns_ip))
 
     command = '%s ec2 create-client-vpn-endpoint --client-cidr-block %s --server-certificate-arn %s ' \
               '--authentication-options %s --connection-log-options Enabled=false --dns-servers %s ' \
-              '--split-tunnel --description "%s" ' \
+              '--description "%s" ' \
               '--tag-specifications \'ResourceType=client-vpn-endpoint,Tags=[{Key=Name,Value="%s"}]\'' % (
         AWS,
-        cidr_block,
+        '10.1.0.0/16',              # cidr block for client IPs
         cert_arns[SERVER],
         'Type=certificate-authentication,MutualAuthentication={ClientRootCertificateChainArn=%s}' % cert_arns[CLIENT],
         ns_ip,
