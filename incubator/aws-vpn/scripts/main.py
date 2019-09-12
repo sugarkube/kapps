@@ -5,6 +5,8 @@
 #
 # For the process, see https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/cvpn-getting-started.html
 #
+# Future enhancements: Wait for all resources to become ready before returning (but disable with a flag)
+#
 
 import argparse
 import subprocess
@@ -155,6 +157,7 @@ def install(args, cluster_name):
     """
     Create a VPN endpoint if it doesn't exist (if it does, do nothing)
     :param args:
+    :param cluster_name: Name of the cluster (used for namespacing resources)
     """
     out_dir = args.out_dir
     out_dir = os.path.abspath(out_dir)
