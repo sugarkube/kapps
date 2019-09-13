@@ -22,7 +22,7 @@ outputs:
 run_units:
   inline:
     working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}"       # directory to use as the working directory
-    apply_install:
+    output:
       - name: get-image-id
         command: wget
         args: -qO- https://stable.release.core-os.net/amd64-usr/current/coreos_production_ami_hvm_{{ .kapp.vars.region }}.txt
