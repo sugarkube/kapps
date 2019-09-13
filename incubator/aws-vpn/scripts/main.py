@@ -30,14 +30,17 @@ CLIENT="client"
 SERVER="server"
 
 def main():
+    script_dir = os.path.dirname(os.path.realpath(__file__))
     parser = argparse.ArgumentParser(description='Creates/updates hosted zones for kops.')
     parser.add_argument(dest='mode', choices=[INSTALL, DELETE], help='Mode to run in')
     parser.add_argument(dest='cluster_name', help='Name of the cluster')
     parser.add_argument(dest='vpc_name', help='Name of the VPC to create an endpoint for')
     parser.add_argument(dest='hostnames', help='Common names to set in the client & server certificates (comma-separated)')
-    parser.add_argument('--out-dir', help='Path to the directory to write files to', default='../cfssl/_generated_certs')
+    parser.add_argument('--out-dir', help='Path to the directory to write files to',
+                        default=os.path.join(script_dir, '../cfssl/_generated_certs'))
     parser.add_argument('--ovpn-out-dir', help='Directory to write the OVPN file to', default='~/Downloads')
-    parser.add_argument('--cert-json', help='Path to a cfssl JSON file', default='../cfssl/cert.json')
+    parser.add_argument('--cert-json', help='Path to a cfssl JSON file',
+                        default=os.path.join(script_dir, '../cfssl/cert.json'))
 
     args = parser.parse_args()
 
