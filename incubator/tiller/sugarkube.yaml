@@ -2,11 +2,6 @@
 # variables applicable to the stack/profile/cluster/etc that you install this
 # kapp into.
 
-# since this isn't a Helm-based kapp, we have to track the version somewhere
-# other than a `Chart.yaml` file. This lets us automatically tag our kapp repo
-# in our CD pipeline.
-version: 0.1.0
-
 templates:
   rbac:
     source: k8s/rbac.tpl.yaml
