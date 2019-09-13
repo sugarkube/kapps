@@ -1,0 +1,31 @@
+requires:
+  - inline
+
+vars:
+  main_kapp_dir: kops-image
+
+post_install_actions:
+  - add_provider_vars_files:
+      params:
+        - _generated_kops_params.yaml
+
+templates:
+  values:
+    source: kapp-templates/kops-image.tpl.yaml
+    dest: _generated_kops_params.yaml
+
+outputs:
+  - id: image
+    path: _generated_image.txt
+    format: text
+
+run_units:
+  inline:
+    working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}"       # directory to use as the working directory
+    apply_install:
+      - name: get-image-id
+        command: wget
+        args: -qO- https://stable.release.core-os.net/amd64-usr/current/coreos_production_ami_hvm_{{ .kapp.vars.region }}.txt
+        stdout: _generated_image.txt        # write the contents of the above URL to this file
+        print: true
+        load_outputs: true                # load outputs after running this step so templates can use the downloaded image via an output
