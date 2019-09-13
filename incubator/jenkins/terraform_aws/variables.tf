@@ -6,6 +6,11 @@ variable "dns_record_name" {
   description = "Non-fully-qualified name of the DNS record to create (e.g. 'site1')"
 }
 
+variable "prometheus_dns_record_name" {
+  description = "Non-fully-qualified name of the DNS record to create for prometheus. If blank, no DNS record will be created for Prometheus"
+  default     = ""
+}
+
 variable "cname_hostname" {
   description = "Hostname to CNAME the record to"
 }

@@ -7,6 +7,7 @@ vars:
   prometheus_enabled: true     # using a variable here allows prometheus to be easily (dis)abled for different stacks
   ingress_class: nginx
   dns_record_name: "{{ .kapp.id }}"
+  prometheus_dns_record_name: "{{ if .kapp.vars.prometheus_enabled }}{{ .kapp.id }}-prometheus{{ end }}"
 #  cert_manager_issuer_kind:    # set these in a manifest
 #  cert_manager_issuer_name:
 # hosted_zone         # hosted zone to create a CNAME DNS record under (AWS only)
