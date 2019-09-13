@@ -1,5 +1,6 @@
 data "aws_route53_zone" "zone" {
-  name = "${var.hosted_zone}"
+  name         = "${var.hosted_zone}"
+  private_zone = "${var.private_zone}"
 }
 
 resource "aws_route53_record" "record" {

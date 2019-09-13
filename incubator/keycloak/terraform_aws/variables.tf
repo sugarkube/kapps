@@ -18,3 +18,7 @@ variable "ttl" {
   description = "TTL for the record"
   default     = 30
 }
+
+variable "private_zone" {
+  description = "Boolean indicating whether the zone to create a DNS record in is a private hosted zone or not"
+}
