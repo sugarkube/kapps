@@ -1,0 +1,5 @@
+provisioner:
+  params:
+    create_cluster:
+      # from https://stable.release.core-os.net/amd64-usr/current/coreos_production_ami_hvm_eu-west-2.txt
+      image: {{ .outputs.this.image }}
