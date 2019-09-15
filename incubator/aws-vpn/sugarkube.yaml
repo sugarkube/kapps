@@ -6,13 +6,14 @@ vars:
 #  hostnames:
 
 requires:
-  - cfssl
-  - cfssljson
   - aws
   - script
 
 run_units:
   script:
+    binaries:     # these aren't invoked directly, but the `main.py` script invokes them. Declaring them means
+      - cfssl     # we can search for them when running `kapps validate`
+      - cfssljson
     working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}"       # directory to use as the working directory
     apply_install:
       - name: create-vpn
