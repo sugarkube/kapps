@@ -2,8 +2,19 @@ variable "region" {
   description = "AWS region name. Used for namespacing global resources."
 }
 
-variable "dns_record_name" {
-  description = "Non-fully-qualified name of the DNS record to create (e.g. 'site1')"
+variable "alert_manager_record_name" {
+  description = "Non-fully-qualified name of the DNS record for Alert Manager"
+  default     = ""
+}
+
+variable "grafana_record_name" {
+  description = "Non-fully-qualified name of the DNS record for Grafana"
+  default     = ""
+}
+
+variable "prometheus_dns_record_name" {
+  description = "Non-fully-qualified name of the DNS record to create for prometheus. If blank, no DNS record will be created"
+  default     = ""
 }
 
 variable "cname_hostname" {

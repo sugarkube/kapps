@@ -7,6 +7,7 @@ vars:
   main_kapp_dir: wordpress
   dns_record_name: "{{ .kapp.id }}"
   ingress_class: nginx
+  script_path: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/install-fixtures.sh"
 #  db_host:           # set all these in the manifest
 #  db_user:
 #  db_password:
@@ -42,7 +43,7 @@ run_units:
     working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}"       # directory to use as the working directory
     apply_install:
       - name: install fixtures
-        command: ./install-fixtures.sh
+        command: "{{ .kapp.vars.script_path }}"
         env_vars:
           KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
           KUBE_CONTEXT: "{{ .kapp.vars.kube_context }}"
@@ -53,3 +54,5 @@ run_units:
           PROVIDER: "{{ .stack.provider }}"
         conditions:
           - "{{ eq .stack.provider \"local\" }}"        # only run when using the local provider
+        binaries:
+          - kubectl

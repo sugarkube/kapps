@@ -10,6 +10,10 @@ metadata:
     "app.kubernetes.io/component": "{{ .Values.jenkins.master.componentName }}"
   name: {{ template "jenkins.fullname" . }}-prometheus
   namespace: {{ template "jenkins.namespace" . }}
+  {{- if .Values.jenkins.master.prometheus.annotations }}
+  annotations:
+  {{ toYaml .Values.jenkins.master.prometheus.annotations | indent 2 }}
+  {{- end }}
 spec:
   rules:
   - host: {{ .Values.jenkins.master.prometheus.hostName }}

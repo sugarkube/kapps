@@ -2,31 +2,37 @@ prometheus-operator:
   prometheus:
     ingress:
       enabled: true
+      annotations:
+        "kubernetes.io/ingress.class": {{ .kapp.vars.ingress_class }}
       hosts:
-      - {{ .kapp.vars.prometheus_hostname }}
+      - {{ .kapp.vars.prometheus_hostname }}.{{ .kapp.vars.hosted_zone }}
       tls:
         - hosts:
-            - {{ .kapp.vars.prometheus_hostname }}
+            - {{ .kapp.vars.prometheus_hostname }}.{{ .kapp.vars.hosted_zone }}
           secretName: {{ .kapp.vars.release }}-cert
 
   grafana:
     ingress:
       enabled: true
+      annotations:
+        "kubernetes.io/ingress.class": {{ .kapp.vars.ingress_class }}
       hosts:
-      - {{ .kapp.vars.grafana_hostname }}
+      - {{ .kapp.vars.grafana_hostname }}.{{ .kapp.vars.hosted_zone }}
       tls:
         - hosts:
-            - {{ .kapp.vars.grafana_hostname }}
+            - {{ .kapp.vars.grafana_hostname }}.{{ .kapp.vars.hosted_zone }}
           secretName: {{ .kapp.vars.release }}-cert
 
   alertmanager:
     ingress:
       enabled: true
+      annotations:
+        "kubernetes.io/ingress.class": {{ .kapp.vars.ingress_class }}
       hosts:
-      - {{ .kapp.vars.alert_manager_hostname }}
+      - {{ .kapp.vars.alert_manager_hostname }}.{{ .kapp.vars.hosted_zone }}
       tls:
         - hosts:
-            - {{ .kapp.vars.alert_manager_hostname }}
+            - {{ .kapp.vars.alert_manager_hostname }}.{{ .kapp.vars.hosted_zone }}
           secretName: {{ .kapp.vars.release }}-cert
 
 cert:

@@ -11,7 +11,9 @@ jenkins:
           secretName: "{{ .kapp.vars.release }}-cert"
 
     prometheus:
-      enabled: "{{ .kapp.vars.prometheusEnabled }}"
+      enabled: "{{ .kapp.vars.prometheus_enabled }}"
+      annotations:
+        "kubernetes.io/ingress.class": {{ .kapp.vars.ingress_class }}
       hostName: "{{ .kapp.vars.prometheus_hostname }}"
       tls:
         - hosts:

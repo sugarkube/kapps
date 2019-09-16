@@ -1,0 +1,25 @@
+vars:
+  script_path: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/scripts/main.py"
+  main_kapp_dir: aws-vpn
+  cluster_name: "{{ .stack.cluster }}"
+#  vpc_name:        # set these in a manifest
+#  hostnames:
+
+requires:
+  - aws
+  - script
+
+run_units:
+  script:
+    binaries:     # these aren't invoked directly, but the `main.py` script invokes them. Declaring them means
+      - cfssl     # we can search for them when running `kapps validate`
+      - cfssljson
+    working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}"       # directory to use as the working directory
+    apply_install:
+      - name: create-vpn
+        command: "{{ .kapp.vars.script_path }}"
+        args: install "{{ .kapp.vars.cluster_name }}" "{{ .kapp.vars.vpc_name }}" "{{ .kapp.vars.hostnames }}"
+    apply_delete:
+      - name: delete-vpn
+        command: "{{ .kapp.vars.script_path }}"
+        args: delete "{{ .kapp.vars.cluster_name }}" "{{ .kapp.vars.vpc_name }}" "{{ .kapp.vars.hostnames }}"

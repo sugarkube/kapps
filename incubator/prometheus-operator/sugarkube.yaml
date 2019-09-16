@@ -3,21 +3,29 @@
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
 vars:
   script_path: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/delete-crds.sh"
-  prometheus_hostname: prometheus.localhost
-  grafana_hostname: grafana.localhost
-  alert_manager_hostname: alertmanager.localhost
+  prometheus_hostname: prometheus
+  grafana_hostname: grafana
+  alert_manager_hostname: alertmanager
   ingress_class: nginx
 #  cert_manager_issuer_kind:    # set these in a manifest
 #  cert_manager_issuer_name:
+# hosted_zone         # hosted zone to create a CNAME DNS record under (AWS only)
+# cname_hostname      # target of the CNAME record (AWS only)
 
 requires:
   - helm
   - script
+  - terraform
 
 templates:
   values:
     source: kapp-templates/values.tpl.yaml
     dest: _generated_values.yaml
+  aws_tf_values:
+    source: kapp-templates/vars-aws.tpl.tfvars
+    dest: "{{ .kapp.vars.terraform_dir }}/_generated_vars.tfvars"
+    conditions:
+      - "{{ eq .stack.provider \"aws\" }}"        # only template this file when running in AWS
 
 run_units:
   script:

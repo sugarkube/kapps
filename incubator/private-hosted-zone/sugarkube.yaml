@@ -2,7 +2,8 @@ requires:
   - aws
 
 vars:
-  script_path: "{{ .kapp.cacheRoot }}/private-hosted-zone/scripts/{{ .stack.provider }}-hosted-zone.py"
+  main_kapp_dir: private-hosted-zone
+  script_path: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/scripts/{{ .stack.provider }}-hosted-zone.py"
 
 run_units:
   aws:

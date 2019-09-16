@@ -30,7 +30,7 @@ run_units:
     working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}"       # directory to use as the working directory
     conditions:       # all must be true for any units to be run
       - "{{ eq .stack.provider \"aws\" }}"        # we only need outputs when running on AWS
-    apply_install:
+    output:
       - name: lb-hostname
         command: "{{ .kapp.vars.kubectl }}"
         args: -n {{ .kapp.vars.namespace }} get service -o jsonpath='{.items[].status.loadBalancer.ingress[].hostname}'
