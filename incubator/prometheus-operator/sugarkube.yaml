@@ -2,6 +2,7 @@
 # text functions.  Variable values come from the final set of variables
 # applicable to the stack/profile/cluster/etc that you install this kapp into.
 vars:
+  script_path: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}/delete-crds.sh"
   prometheus_hostname: prometheus.localhost
   grafana_hostname: grafana.localhost
   alert_manager_hostname: alertmanager.localhost
@@ -11,8 +12,19 @@ vars:
 
 requires:
   - helm
+  - script
 
 templates:
   values:
     source: kapp-templates/values.tpl.yaml
     dest: _generated_values.yaml
+
+run_units:
+  script:
+    apply_delete:
+      - name: delete CRDs
+        command: "{{ .kapp.vars.script_path }}"
+        env_vars:
+          KUBECTL: "{{ .kapp.vars.kubectl }}"
+          KUBE_CONTEXT: "{{ .kapp.vars.kube_context }}"
+        merge_priority: 20
