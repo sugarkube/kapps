@@ -22,8 +22,11 @@ requires:
 # this uses the helm binary but doesn't use the default run steps
 run_units:
   helm:
-    working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.id }}"       # directory to use as the working directory
-    plan_install:
+    working_dir: "{{ .kapp.cacheRoot }}/{{ .kapp.vars.main_kapp_dir }}"       # directory to use as the working directory
+    plan_install:           # define a no-op run step to override the default one (that lints helm charts)
+      - name: replace-default
+        command: echo
+        args: nothing to plan
     apply_install:
       - name: install RBAC
         command: "{{ .kapp.vars.kubectl }}"
