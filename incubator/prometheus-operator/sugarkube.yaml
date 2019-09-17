@@ -11,6 +11,7 @@ vars:
 #  cert_manager_issuer_name:
 # hosted_zone         # hosted zone to create a CNAME DNS record under (AWS only)
 # cname_hostname      # target of the CNAME record (AWS only)
+  kubeconfig: "{{ .kubeconfig }}"
 
 requires:
   - helm
@@ -35,4 +36,5 @@ run_units:
         env_vars:
           KUBECTL: "{{ .kapp.vars.kubectl }}"
           KUBE_CONTEXT: "{{ .kapp.vars.kube_context }}"
+          KUBECONFIG: "{{ .kapp.vars.kubeconfig }}"
         merge_priority: 20
