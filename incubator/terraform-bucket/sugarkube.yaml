@@ -8,7 +8,9 @@ outputs:
     format: json
 
 ignore_global_defaults: true        # this opts out of using the terraform stuff configured in sugarkube-conf.yaml.
-                                    # Without this we'd get a backend.tf file whether we wanted one or not.
+                                    # Without this we'd get a backend.tf file whether we wanted one or not. We could
+                                    # work around that by running a script first that gets rid of it but this shows
+                                    # we can completely opt out of the project defaults
 
 vars:
   main_kapp_dir: "{{ .kapp.id }}"
@@ -103,3 +105,12 @@ run_units:
         args: output -json
         stdout: "{{ .kapp.vars.tf_output_path }}"       # save stdout to this path
         load_outputs: true      # instructs sugarkube to load and parse any defined outputs making them available for subsequent run steps
+    clean:
+      - name: clean-terraform
+        command: find
+        args: "{{ .kapp.cacheRoot }} -name '.terraform' -type d -exec rm -rf {} ';'"
+        ignore_errors: true         # find returns several exit codes; we don't really care about the details
+      - name: delete-generated-files
+        command: find
+        args: "{{ .kapp.cacheRoot }} -name '_generated_*' -type f -delete"
+        ignore_errors: true         # find returns several exit codes; we don't really care about the details
