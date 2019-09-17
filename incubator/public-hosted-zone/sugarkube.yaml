@@ -5,6 +5,9 @@ vars:
 #  hosted_zone:      # set these in a manifest
 #  parent_hosted_zone:
 
+metadata:       # this is a catch-all key for user-defined values. Sugarkube doesn't use this data at all
+  version: 0.1.0   # there's no `Chart.yaml` so we can keep the kapp version here and use it in a CI pipeline to auto-tag the repo
+
 requires:
   - aws
   - terraform

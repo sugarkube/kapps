@@ -2,6 +2,9 @@ requires:
   - terraform
   - aws
 
+metadata:       # this is a catch-all key for user-defined values. Sugarkube doesn't use this data at all
+  version: 0.1.0   # there's no `Chart.yaml` so we can keep the kapp version here and use it in a CI pipeline to auto-tag the repo
+
 outputs:
   - id: terraform
     path: "{{ .kapp.vars.tf_output_path }}"
